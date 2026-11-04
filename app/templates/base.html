@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#151360">
+  <title>{% block title %}لوحة التحكم{% endblock %} · طلاب الدكتوراه البحثية في جامعة أمير كبير</title>
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "light") document.documentElement.setAttribute("data-theme", "light");
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/css/app.css?v=dq4">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-topbar">
+        <span><i class="fa-solid fa-graduation-cap"></i> جامعة أمير كبير</span>
+        <span>PhD · Research</span>
+      </div>
+      <div class="brand">
+        <div class="brand-row">
+          <div class="brand-mark">PhD</div>
+          <div>
+            <h1>طلاب الدكتوراه البحثية</h1>
+            <p class="logo-en">Amirkabir University</p>
+          </div>
+        </div>
+        <p>جامعة أمير كبير — إدارة المسار الأكاديمي والإقامة والأرشيف العلمي</p>
+      </div>
+      <nav class="nav">
+        <a href="/" class="{{ 'active' if active == 'dashboard' else '' }}"><span class="nav-ico"><i class="fa-solid fa-chart-pie"></i></span> لوحة التحكم</a>
+        <a href="/profile" class="{{ 'active' if active == 'profile' else '' }}"><span class="nav-ico"><i class="fa-solid fa-id-card"></i></span> الملف الأكاديمي</a>
+        <a href="/residence" class="{{ 'active' if active == 'residence' else '' }}"><span class="nav-ico"><i class="fa-solid fa-calendar-check"></i></span> متتبع الإقامة</a>
+        <a href="/thesis" class="{{ 'active' if active == 'thesis' else '' }}"><span class="nav-ico"><i class="fa-solid fa-book-open"></i></span> فصول الأطروحة</a>
+        <a href="/research" class="{{ 'active' if active == 'research' else '' }}"><span class="nav-ico"><i class="fa-solid fa-flask"></i></span> المواد البحثية</a>
+        <a href="/presentations" class="{{ 'active' if active == 'presentations' else '' }}"><span class="nav-ico"><i class="fa-solid fa-chalkboard-user"></i></span> العروض التقديمية</a>
+        <a href="/documents" class="{{ 'active' if active == 'documents' else '' }}"><span class="nav-ico"><i class="fa-solid fa-folder-open"></i></span> الوثائق الدراسية</a>
+        <a href="/publications" class="{{ 'active' if active == 'publications' else '' }}"><span class="nav-ico"><i class="fa-solid fa-newspaper"></i></span> المنشورات</a>
+        <a href="/meetings" class="{{ 'active' if active == 'meetings' else '' }}"><span class="nav-ico"><i class="fa-solid fa-comments"></i></span> لقاءات المشرف</a>
+        <a href="/tasks" class="{{ 'active' if active == 'tasks' else '' }}"><span class="nav-ico"><i class="fa-solid fa-list-check"></i></span> المهام والمواعيد</a>
+        <a href="/notes" class="{{ 'active' if active == 'notes' else '' }}"><span class="nav-ico"><i class="fa-solid fa-pen-nib"></i></span> المفكرة البحثية</a>
+      </nav>
+      <div class="sidebar-actions">
+        <button type="button" class="theme-toggle" id="themeToggle" aria-label="تبديل الوضع">
+          <i class="fa-solid fa-moon"></i>
+          <span>الوضع</span>
+        </button>
+      </div>
+      <div class="sidebar-foot">
+        منصة مخصّصة لطلاب الدكتوراه البحثية في جامعة أمير كبير — تتبّع الإقامة، الأرشفة العلمية، ومتابعة الأطروحة.
+      </div>
+    </aside>
+
+    <div class="content-wrap">
+      <main class="main">
+        {% if ok %}<div class="alert alert-ok"><i class="fa-solid fa-circle-check"></i> {{ ok }}</div>{% endif %}
+        {% if err %}<div class="alert alert-err"><i class="fa-solid fa-circle-exclamation"></i> {{ err }}</div>{% endif %}
+        {% block content %}{% endblock %}
+      </main>
+      <footer class="site-footer">
+        <div class="site-footer-inner">
+          <span>طلاب الدكتوراه البحثية في جامعة أمير كبير</span>
+          <span class="footer-credit">تم التصميم بواسطة سجاد زيارة |</span>
+        </div>
+      </footer>
+    </div>
+  </div>
+  <div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
+  <button class="mobile-toggle" type="button" aria-label="القائمة"><i class="fa-solid fa-bars"></i></button>
+  <script src="/static/js/app.js?v=dq5"></script>
+</body>
+</html>

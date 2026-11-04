@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}الملف الأكاديمي{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <h2>الملف الأكاديمي</h2>
+    <p class="subtitle">بياناتك الرسمية للطالب الموفد — تُستخدم في التقارير ومتتبع الإقامة والوثائق.</p>
+  </div>
+</div>
+
+<section class="panel">
+  <div class="panel-head"><h3>الهوية والمسار الدراسي</h3></div>
+  <div class="panel-body">
+    <form method="post" action="/profile" class="form-grid">
+      <div class="field"><label>الاسم الكامل (عربي)</label><input name="full_name" value="{{ profile.full_name }}" required></div>
+      <div class="field"><label>الاسم (إنجليزي)</label><input name="full_name_en" value="{{ profile.full_name_en }}"></div>
+      <div class="field"><label>البريد الإلكتروني</label><input type="email" name="email" value="{{ profile.email }}"></div>
+      <div class="field"><label>الهاتف</label><input name="phone" value="{{ profile.phone }}"></div>
+      <div class="field"><label>الجامعة</label><input name="university" value="{{ profile.university }}"></div>
+      <div class="field"><label>الكلية / المدرسة</label><input name="faculty" value="{{ profile.faculty }}"></div>
+      <div class="field"><label>القسم</label><input name="department" value="{{ profile.department }}"></div>
+      <div class="field"><label>التخصص</label><input name="specialization" value="{{ profile.specialization }}"></div>
+      <div class="field full"><label>عنوان الأطروحة (عربي)</label><textarea name="thesis_title" rows="2">{{ profile.thesis_title }}</textarea></div>
+      <div class="field full"><label>عنوان الأطروحة (إنجليزي)</label><textarea name="thesis_title_en" rows="2">{{ profile.thesis_title_en }}</textarea></div>
+      <div class="field"><label>المشرف الرئيسي</label><input name="supervisor_name" value="{{ profile.supervisor_name }}"></div>
+      <div class="field"><label>بريد المشرف</label><input name="supervisor_email" value="{{ profile.supervisor_email }}"></div>
+      <div class="field"><label>المشرف المشارك</label><input name="co_supervisor" value="{{ profile.co_supervisor }}"></div>
+      <div class="field"><label>جهة الابتعاث</label><input name="scholarship_body" value="{{ profile.scholarship_body }}"></div>
+      <div class="field"><label>بلد الدراسة</label><input name="study_country" value="{{ profile.study_country }}" placeholder="مثال: ماليزيا"></div>
+      <div class="field"><label>مدينة الدراسة</label><input name="study_city" value="{{ profile.study_city }}"></div>
+      <div class="field"><label>رقم جواز السفر</label><input name="passport_number" value="{{ profile.passport_number }}"></div>
+      <div class="field"><label>أشهر الإقامة المطلوبة (العراق)</label><input type="number" min="1" name="residence_required_months" value="{{ profile.residence_required_months }}"></div>
+      <div class="field"><label>تاريخ بدء الدراسة</label><input type="date" name="start_date" value="{{ profile.start_date or '' }}"></div>
+      <div class="field"><label>تاريخ الانتهاء المتوقع</label><input type="date" name="expected_end_date" value="{{ profile.expected_end_date or '' }}"></div>
+      <div class="field full"><label>ملاحظات إدارية / أكاديمية</label><textarea name="notes">{{ profile.notes }}</textarea></div>
+      <div class="actions full">
+        <button class="btn btn-primary" type="submit">حفظ الملف</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

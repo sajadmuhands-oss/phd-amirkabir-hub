@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}فصول الأطروحة{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <h2>فصول الأطروحة</h2>
+    <p class="subtitle">تابع تقدّم كل فصل ونسبة الإنجاز وعدد الكلمات — الهيكل الافتراضي جاهز ويمكنك تعديله.</p>
+  </div>
+  <span class="badge">متوسط الإنجاز {{ progress.average }}%</span>
+</div>
+
+<section class="panel" style="margin-bottom:1.2rem">
+  <div class="panel-head"><h3>إضافة / تحديث نظرة عامة</h3></div>
+  <div class="panel-body">
+    <form method="post" action="/thesis" class="form-grid">
+      <div class="field"><label>رقم الفصل</label><input type="number" name="chapter_number" value="1" min="0"></div>
+      <div class="field"><label>العنوان</label><input name="title" required></div>
+      <div class="field">
+        <label>الحالة</label>
+        <select name="status">
+          <option>لم يبدأ</option>
+          <option>مسودة أولى</option>
+          <option>قيد المراجعة</option>
+          <option>مراجع من المشرف</option>
+          <option>مكتمل</option>
+        </select>
+      </div>
+      <div class="field"><label>نسبة الإنجاز %</label><input type="number" name="progress_percent" min="0" max="100" value="0"></div>
+      <div class="field"><label>عدد الكلمات الحالي</label><input type="number" name="word_count" min="0" value="0"></div>
+      <div class="field"><label>الهدف (كلمات)</label><input type="number" name="target_words" min="0" value="0"></div>
+      <div class="field"><label>موعد مستهدف</label><input type="date" name="due_date"></div>
+      <div class="field full"><label>ملاحظات</label><textarea name="notes"></textarea></div>
+      <div class="actions full"><button class="btn btn-primary" type="submit">إضافة فصل</button></div>
+    </form>
+  </div>
+</section>
+
+<div class="grid grid-2">
+  {% for c in chapters %}
+  <section class="chapter-card panel" style="box-shadow:var(--shadow)">
+    <div class="panel-body">
+      <h4>الفصل {{ c.chapter_number }} — {{ c.title }}</h4>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.7rem">
+        <span class="tag {% if c.status == 'مكتمل' %}ok{% elif c.status == 'لم يبدأ' %}{% else %}warn{% endif %}">{{ c.status }}</span>
+        {% if c.due_date %}<span class="tag">استحقاق {{ c.due_date }}</span>{% endif %}
+      </div>
+      <div class="progress"><span style="width:{{ c.progress_percent }}%"></span></div>
+      <p style="margin:.7rem 0;color:var(--slate);font-size:.88rem">
+        {{ c.progress_percent }}% · {{ c.word_count }} / {{ c.target_words or '—' }} كلمة
+      </p>
+      <form method="post" action="/thesis/{{ c.id }}" class="form-grid">
+        <div class="field"><label>رقم</label><input type="number" name="chapter_number" value="{{ c.chapter_number }}"></div>
+        <div class="field"><label>العنوان</label><input name="title" value="{{ c.title }}" required></div>
+        <div class="field">
+          <label>الحالة</label>
+          <select name="status">
+            {% for s in ['لم يبدأ','مسودة أولى','قيد المراجعة','مراجع من المشرف','مكتمل'] %}
+            <option value="{{ s }}" {% if c.status == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field"><label>الإنجاز %</label><input type="number" name="progress_percent" min="0" max="100" value="{{ c.progress_percent }}"></div>
+        <div class="field"><label>كلمات</label><input type="number" name="word_count" min="0" value="{{ c.word_count }}"></div>
+        <div class="field"><label>هدف</label><input type="number" name="target_words" min="0" value="{{ c.target_words }}"></div>
+        <div class="field"><label>موعد</label><input type="date" name="due_date" value="{{ c.due_date or '' }}"></div>
+        <div class="field full"><label>ملاحظات</label><textarea name="notes">{{ c.notes }}</textarea></div>
+        <div class="actions full">
+          <button class="btn btn-brass" type="submit">تحديث</button>
+          <button class="btn btn-danger btn-sm" type="submit" formaction="/thesis/{{ c.id }}/delete" formmethod="post" onclick="return confirm('حذف الفصل؟')">حذف</button>
+        </div>
+      </form>
+    </div>
+  </section>
+  {% else %}
+  <div class="empty panel" style="grid-column:1/-1;padding:2rem"><strong>لا فصول</strong>أضف هيكل أطروحتك.</div>
+  {% endfor %}
+</div>
+{% endblock %}

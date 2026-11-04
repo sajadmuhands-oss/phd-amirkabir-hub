@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}متتبع الإقامة{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <h2>متتبع الإقامة</h2>
+    <p class="subtitle">
+      يحسب مجموع أيام تواجدك الفعلي في بلد الدراسة. متطلب العراق الافتراضي:
+      <strong>{{ residence.required_months }} أشهر</strong> (≈ {{ residence.required_days }} يوماً).
+      سجّل كل دخول وخروج بدقة لتقديم إثبات واضح عند الطلبات الإدارية.
+    </p>
+  </div>
+  <span class="badge">{% if residence.completed %}مستوفٍ{% else %}متبقٍ {{ residence.remaining_days }} يوماً{% endif %}</span>
+</div>
+
+<section class="hero-panel" style="margin-bottom:1.2rem">
+  <h3>{{ residence.total_days }} يوماً · ≈ {{ residence.months_equiv }} شهراً</h3>
+  <p>
+    التقدم نحو شرط الإقامة في {{ residence.study_country or 'بلد الدراسة' }}.
+    {% if residence.has_open_stay %}لديك إقامة جارية تُحسب حتى اليوم.{% endif %}
+    {% if residence.projected_completion and not residence.completed %}
+      التقدير التقريبي للاستيفاء: {{ residence.projected_completion }}.
+    {% endif %}
+  </p>
+  <div class="progress dark" style="margin-top:1.1rem;position:relative"><span style="width:{{ residence.progress_percent }}%"></span></div>
+  <div class="hero-meta">
+    <span class="chip">المطلوب: {{ residence.required_days }} يوماً</span>
+    <span class="chip">المتحقق: {{ residence.progress_percent }}%</span>
+    {% if residence.current_streak_days %}<span class="chip">الإقامة الحالية: {{ residence.current_streak_days }} يوماً</span>{% endif %}
+  </div>
+</section>
+
+<div class="grid grid-2">
+  <section class="panel">
+    <div class="panel-head"><h3>تسجيل فترة إقامة</h3></div>
+    <div class="panel-body">
+      <form method="post" action="/residence" class="form-grid">
+        <div class="field"><label>تاريخ الدخول</label><input type="date" name="entry_date" required></div>
+        <div class="field" id="exit_date_wrap"><label>تاريخ المغادرة</label><input type="date" name="exit_date"></div>
+        <div class="field"><label>الدولة</label><input name="country" value="{{ profile.study_country }}"></div>
+        <div class="field"><label>المدينة</label><input name="city" value="{{ profile.study_city }}"></div>
+        <div class="field full">
+          <label style="display:flex;align-items:center;gap:.5rem;color:var(--ink)">
+            <input type="checkbox" name="is_current" id="is_current"> أنا مقيم حالياً (بدون تاريخ مغادرة)
+          </label>
+        </div>
+        <div class="field full"><label>ملاحظات (تأشيرة، ختم، سبب السفر…)</label><textarea name="notes"></textarea></div>
+        <div class="actions full"><button class="btn btn-primary" type="submit">إضافة الفترة</button></div>
+      </form>
+      <p style="margin:1rem 0 0;font-size:.85rem;color:var(--slate);line-height:1.7">
+        نصيحة أكاديمية-إدارية: احتفظ بنسخ من أختام الجواز وبطاقات الصعود وقيود الإقامة المحلية كأدلة مساندة، وارفعها في قسم الوثائق.
+      </p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h3>سجل الفترات</h3></div>
+    <div class="panel-body table-wrap">
+      {% if residence.periods %}
+      <table>
+        <thead>
+          <tr>
+            <th>الدخول</th>
+            <th>المغادرة</th>
+            <th>الأيام</th>
+            <th>الموقع</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in residence.periods|reverse %}
+          <tr>
+            <td>{{ p.entry_date }}</td>
+            <td>
+              {% if p.is_current %}
+                <span class="tag ok">جارية</span>
+              {% else %}
+                {{ p.exit_date or '—' }}
+              {% endif %}
+            </td>
+            <td><strong>{{ p.days }}</strong></td>
+            <td>{{ p.city or '—' }}{% if p.country %} · {{ p.country }}{% endif %}</td>
+            <td>
+              <div class="actions" style="margin:0">
+                {% if p.is_current %}
+                <form method="post" action="/residence/{{ p.id }}/close" style="display:flex;gap:.35rem;align-items:center">
+                  <input type="date" name="exit_date" required style="padding:.35rem .5rem;border-radius:8px;border:1px solid var(--line)">
+                  <button class="btn btn-sm btn-ghost" type="submit">إغلاق</button>
+                </form>
+                {% endif %}
+                <form method="post" action="/residence/{{ p.id }}/delete" data-confirm="حذف فترة الإقامة؟">
+                  <button class="btn btn-sm btn-danger" type="submit">حذف</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty"><strong>لا فترات مسجّلة</strong>ابدأ بإضافة أول دخول إلى بلد الدراسة.</div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

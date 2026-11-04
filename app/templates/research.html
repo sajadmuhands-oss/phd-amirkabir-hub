@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}المواد البحثية{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <h2>المواد البحثية</h2>
+    <p class="subtitle">أرشِف أوراقك، المسودات، قواعد البيانات، والمراجع المرتبطة بأطروحتك.</p>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <section class="panel">
+    <div class="panel-head"><h3>رفع مادة جديدة</h3></div>
+    <div class="panel-body">
+      <form method="post" action="/research" enctype="multipart/form-data" class="form-grid">
+        <div class="field full"><label>العنوان</label><input name="title" required></div>
+        <div class="field">
+          <label>التصنيف</label>
+          <select name="category">
+            <option>ورقة بحثية</option>
+            <option>مسودة أطروحة</option>
+            <option>بيانات / جداول</option>
+            <option>مرجع أساسي</option>
+            <option>بروتوكول / منهجية</option>
+            <option>أخرى</option>
+          </select>
+        </div>
+        <div class="field"><label>السنة</label><input name="year" placeholder="2026"></div>
+        <div class="field"><label>المؤلفون</label><input name="authors"></div>
+        <div class="field"><label>وسوم</label><input name="tags" placeholder="منهجية، تحليل، فصل 3"></div>
+        <div class="field full"><label>الوصف</label><textarea name="description"></textarea></div>
+        <div class="field full"><label>الملف (PDF, DOCX, ZIP… حتى 50 م.ب)</label><input type="file" name="file"></div>
+        <div class="actions full"><button class="btn btn-primary" type="submit">حفظ المادة</button></div>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h3>المكتبة ({{ items|length }})</h3></div>
+    <div class="panel-body table-wrap">
+      {% if items %}
+      <table>
+        <thead><tr><th>العنوان</th><th>التصنيف</th><th>الملف</th><th></th></tr></thead>
+        <tbody>
+        {% for item in items %}
+          <tr>
+            <td>
+              <strong>{{ item.title }}</strong>
+              {% if item.authors %}<div style="color:var(--slate);font-size:.82rem;margin-top:.25rem">{{ item.authors }}{% if item.year %} · {{ item.year }}{% endif %}</div>{% endif %}
+              {% if item.description %}<div style="color:var(--slate);font-size:.82rem;margin-top:.25rem">{{ item.description[:100] }}</div>{% endif %}
+            </td>
+            <td><span class="tag">{{ item.category }}</span></td>
+            <td>
+              {% if item.filename %}
+                <a href="/files/research/{{ item.filename }}">{{ item.original_name or item.filename }}</a>
+                <div style="font-size:.75rem;color:var(--slate)">{{ format_bytes(item.file_size) }}</div>
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              <form method="post" action="/research/{{ item.id }}/delete" data-confirm="حذف هذه المادة؟">
+                <button class="btn btn-sm btn-danger" type="submit">حذف</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty"><strong>لا مواد بعد</strong>ابدأ برفع أهم المراجع والمنهجيات.</div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

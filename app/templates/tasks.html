@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}المهام{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <h2>المهام والمواعيد</h2>
+    <p class="subtitle">مواعيد إدارية (تجديد إقامة، تقارير وزارة) وأكاديمية (تسليم فصل، موعد مؤتمر) في قائمة واحدة.</p>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <section class="panel">
+    <div class="panel-head"><h3>مهمة جديدة</h3></div>
+    <div class="panel-body">
+      <form method="post" action="/tasks" class="form-grid">
+        <div class="field full"><label>العنوان</label><input name="title" required></div>
+        <div class="field">
+          <label>التصنيف</label>
+          <select name="category">
+            <option>بحث</option>
+            <option>كتابة أطروحة</option>
+            <option>إداري / وزارة</option>
+            <option>إقامة / تأشيرة</option>
+            <option>مؤتمر</option>
+            <option>شخصي أكاديمي</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>الأولوية</label>
+          <select name="priority">
+            <option>منخفض</option>
+            <option selected>متوسط</option>
+            <option>عالي</option>
+            <option>حرج</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>الحالة</label>
+          <select name="status">
+            <option>قيد التنفيذ</option>
+            <option>معلّق</option>
+            <option>مكتمل</option>
+          </select>
+        </div>
+        <div class="field"><label>الاستحقاق</label><input type="date" name="due_date"></div>
+        <div class="field full"><label>التفاصيل</label><textarea name="description"></textarea></div>
+        <div class="actions full"><button class="btn btn-primary" type="submit">إضافة</button></div>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h3>القائمة ({{ items|length }})</h3></div>
+    <div class="panel-body">
+      {% if items %}
+      <div class="list-stack">
+        {% for item in items %}
+        <div class="list-item" style="{% if item.status == 'مكتمل' %}opacity:.65{% endif %}">
+          <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+            <div>
+              <h4>{{ item.title }}</h4>
+              <p>
+                <span class="tag">{{ item.category }}</span>
+                <span class="tag {% if item.priority in ['عالي','حرج'] %}danger{% elif item.priority == 'متوسط' %}warn{% endif %}">{{ item.priority }}</span>
+                <span class="tag {% if item.status == 'مكتمل' %}ok{% endif %}">{{ item.status }}</span>
+                {% if item.due_date %} · {{ item.due_date }}{% endif %}
+              </p>
+              {% if item.description %}<p>{{ item.description }}</p>{% endif %}
+            </div>
+            <div class="actions" style="margin:0">
+              <form method="post" action="/tasks/{{ item.id }}/toggle">
+                <button class="btn btn-sm btn-ghost" type="submit">{% if item.status == 'مكتمل' %}إعادة فتح{% else %}إكمال{% endif %}</button>
+              </form>
+              <form method="post" action="/tasks/{{ item.id }}/delete" data-confirm="حذف المهمة؟">
+                <button class="btn btn-sm btn-danger" type="submit">حذف</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty"><strong>لا مهام</strong>أضف أقرب موعد إداري أو بحثي.</div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

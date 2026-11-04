@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}الوثائق الدراسية{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <h2>الوثائق الدراسية</h2>
+    <p class="subtitle">أوامر الإيفاد، القبول، التأشيرات، كشوف الدرجات، شهادات اللغة، وخطابات الجامعة — جاهزة عند أي طلب إداري.</p>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <section class="panel">
+    <div class="panel-head"><h3>رفع وثيقة</h3></div>
+    <div class="panel-body">
+      <form method="post" action="/documents" enctype="multipart/form-data" class="form-grid">
+        <div class="field full"><label>عنوان الوثيقة</label><input name="title" required></div>
+        <div class="field">
+          <label>النوع</label>
+          <select name="doc_type">
+            <option>أمر إيفاد / ابتعاث</option>
+            <option>خطاب قبول</option>
+            <option>تأشيرة / إقامة</option>
+            <option>جواز سفر</option>
+            <option>كشف درجات</option>
+            <option>شهادة لغة</option>
+            <option>تأمين صحي</option>
+            <option>عقد سكن</option>
+            <option>خطاب جامعة</option>
+            <option>أخرى</option>
+          </select>
+        </div>
+        <div class="field"><label>الجهة الصادرة</label><input name="issuer"></div>
+        <div class="field"><label>تاريخ الإصدار</label><input type="date" name="issue_date"></div>
+        <div class="field"><label>تاريخ الانتهاء</label><input type="date" name="expiry_date"></div>
+        <div class="field full"><label>وصف</label><textarea name="description"></textarea></div>
+        <div class="field full"><label>الملف</label><input type="file" name="file"></div>
+        <div class="actions full"><button class="btn btn-primary" type="submit">حفظ الوثيقة</button></div>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h3>الأرشيف الرسمي ({{ items|length }})</h3></div>
+    <div class="panel-body table-wrap">
+      {% if items %}
+      <table>
+        <thead><tr><th>الوثيقة</th><th>النوع</th><th>الصلاحية</th><th>الملف</th><th></th></tr></thead>
+        <tbody>
+        {% for item in items %}
+          <tr>
+            <td>
+              <strong>{{ item.title }}</strong>
+              {% if item.issuer %}<div style="color:var(--slate);font-size:.82rem">{{ item.issuer }}</div>{% endif %}
+            </td>
+            <td><span class="tag">{{ item.doc_type }}</span></td>
+            <td>
+              {% if item.issue_date %}إصدار {{ item.issue_date }}<br>{% endif %}
+              {% if item.expiry_date %}<span class="tag warn">ينتهي {{ item.expiry_date }}</span>{% else %}—{% endif %}
+            </td>
+            <td>
+              {% if item.filename %}
+                <a href="/files/documents/{{ item.filename }}">{{ item.original_name or 'تحميل' }}</a>
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              <form method="post" action="/documents/{{ item.id }}/delete" data-confirm="حذف الوثيقة؟">
+                <button class="btn btn-sm btn-danger" type="submit">حذف</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty"><strong>لا وثائق بعد</strong>ارفع أمر الإيفاد وخطاب القبول أولاً.</div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

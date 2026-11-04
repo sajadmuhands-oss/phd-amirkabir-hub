@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}لوحة التحكم{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <h2>مرحباً{% if profile.full_name %}، {{ profile.full_name }}{% endif %}</h2>
+    <p class="subtitle">
+      {% if profile.thesis_title %}{{ profile.thesis_title }}{% else %}أكمل ملفك الأكاديمي لتبدأ رحلة منظمة نحو مناقشة الأطروحة.{% endif %}
+    </p>
+  </div>
+  <span class="badge">{{ profile.university or 'جامعة الدراسة' }} · {{ profile.study_country or 'بلد الدراسة' }}</span>
+</div>
+
+<section class="hero-panel" style="margin-bottom:1.2rem">
+  <h3><i class="fa-solid fa-landmark" style="margin-left:.45rem;opacity:.85"></i>مسارك البحثي اليوم</h3>
+  <p>
+    منصة واحدة تجمع أرشيفك العلمي، وثائقك الرسمية، تقدّم الأطروحة، ومتطلب الإقامة المفروض من العراق
+    ({{ residence.required_months }} أشهر ≈ {{ residence.required_days }} يوماً) — لطلاب الدكتوراه البحثية في جامعة أمير كبير.
+  </p>
+  <div class="hero-meta">
+    <span class="chip"><i class="fa-regular fa-clock"></i>&nbsp; مدة الدراسة: {{ study_duration }}</span>
+    <span class="chip"><i class="fa-solid fa-book"></i>&nbsp; الأطروحة: {{ thesis.average }}%</span>
+    <span class="chip"><i class="fa-solid fa-plane-arrival"></i>&nbsp; الإقامة: {{ residence.total_days }} / {{ residence.required_days }} يوماً</span>
+    <span class="chip"><i class="fa-solid fa-list-check"></i>&nbsp; مهام مفتوحة: {{ counts.tasks_open }}</span>
+  </div>
+</section>
+
+<div class="grid grid-4" style="margin-bottom:1.2rem">
+  <div class="stat">
+    <div class="label">مواد بحثية</div>
+    <div class="value">{{ counts.research }}</div>
+    <div class="hint"><a href="/research">إدارة الأرشيف ←</a></div>
+  </div>
+  <div class="stat">
+    <div class="label">عروض تقديمية</div>
+    <div class="value">{{ counts.presentations }}</div>
+    <div class="hint"><a href="/presentations">عرض المكتبة ←</a></div>
+  </div>
+  <div class="stat">
+    <div class="label">وثائق دراسية</div>
+    <div class="value">{{ counts.documents }}</div>
+    <div class="hint"><a href="/documents">الأرشيف الرسمي ←</a></div>
+  </div>
+  <div class="stat">
+    <div class="label">منشورات</div>
+    <div class="value">{{ counts.publications }}</div>
+    <div class="hint"><a href="/publications">سجل النشر ←</a></div>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <section class="panel">
+    <div class="panel-head">
+      <h3>متطلب الإقامة</h3>
+      <a class="btn btn-sm btn-ghost" href="/residence">التفاصيل</a>
+    </div>
+    <div class="panel-body">
+      <div class="meter-big">
+        <div class="ring" style="--p: {{ residence.progress_percent }}">{{ residence.progress_percent }}%</div>
+        <div>
+          <p style="margin:0 0 .5rem;color:var(--slate);line-height:1.7">
+            مجموع أيام الإقامة الفعلية في {{ residence.study_country or 'بلد الدراسة' }}:
+            <strong>{{ residence.total_days }}</strong> يوماً
+            (≈ {{ residence.months_equiv }} شهراً).
+          </p>
+          {% if residence.completed %}
+            <span class="tag ok">استُوفي شرط الـ {{ residence.required_months }} أشهر</span>
+          {% else %}
+            <span class="tag warn">متبقٍ {{ residence.remaining_days }} يوماً</span>
+            {% if residence.projected_completion %}
+              <p style="margin:.6rem 0 0;font-size:.88rem;color:var(--slate)">
+                تقدير الاستيفاء إن استمرت الإقامة الحالية: {{ residence.projected_completion }}
+              </p>
+            {% endif %}
+          {% endif %}
+          <div class="progress" style="margin-top:.9rem"><span style="width:{{ residence.progress_percent }}%"></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h3>تقدم الأطروحة</h3>
+      <a class="btn btn-sm btn-ghost" href="/thesis">الفصول</a>
+    </div>
+    <div class="panel-body">
+      <div class="stat" style="box-shadow:none;padding:0;background:transparent;border:0">
+        <div class="label">متوسط الإنجاز عبر {{ thesis.count }} فصلاً</div>
+        <div class="value">{{ thesis.average }}%</div>
+        <div class="hint">مكتمل: {{ thesis.done }} فصل</div>
+      </div>
+      <div class="progress" style="margin-top:1rem"><span style="width:{{ thesis.average }}%"></span></div>
+      {% if profile.supervisor_name %}
+        <p style="margin:1rem 0 0;color:var(--slate);font-size:.9rem">المشرف: {{ profile.supervisor_name }}</p>
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+<div class="grid grid-3" style="margin-top:1.2rem">
+  <section class="panel">
+    <div class="panel-head"><h3>مهام قادمة</h3><a class="btn btn-sm btn-ghost" href="/tasks">الكل</a></div>
+    <div class="panel-body">
+      {% if tasks %}
+      <div class="list-stack">
+        {% for t in tasks %}
+        <div class="list-item">
+          <h4>{{ t.title }}</h4>
+          <p>{{ t.category }} · {{ t.priority }}{% if t.due_date %} · استحقاق {{ t.due_date }}{% endif %}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty"><strong>لا مهام حالياً</strong>أضف مواعيدك الإدارية والبحثية.</div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h3>آخر اللقاءات</h3><a class="btn btn-sm btn-ghost" href="/meetings">السجل</a></div>
+    <div class="panel-body">
+      {% if meetings %}
+      <div class="list-stack">
+        {% for m in meetings %}
+        <div class="list-item">
+          <h4>{{ m.meeting_date }} · {{ m.meeting_type }}</h4>
+          <p>{{ m.topics[:120] }}{% if m.topics|length > 120 %}…{% endif %}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty"><strong>لا لقاءات بعد</strong>وثّق اجتماعاتك مع المشرف أولاً بأول.</div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h3>مذكرات بحثية</h3><a class="btn btn-sm btn-ghost" href="/notes">المفكرة</a></div>
+    <div class="panel-body">
+      {% if notes %}
+      <div class="list-stack">
+        {% for n in notes %}
+        <div class="list-item">
+          <h4>{{ n.title }}</h4>
+          <p>{{ n.content[:120] }}{% if n.content|length > 120 %}…{% endif %}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty"><strong>المفكرة فارغة</strong>سجّل الأفكار والنتائج الجزئية فور ظهورها.</div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

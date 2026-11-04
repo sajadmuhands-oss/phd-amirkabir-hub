@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}لقاءات المشرف{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <h2>لقاءات المشرف</h2>
+    <p class="subtitle">
+      وثّق المواضيع والقرارات والواجبات التالية بعد كل اجتماع
+      {% if profile.supervisor_name %}مع {{ profile.supervisor_name }}{% endif %}.
+      هذا السجل يثبت انتظام الإشراف عند التقارير السنوية.
+    </p>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <section class="panel">
+    <div class="panel-head"><h3>تسجيل لقاء</h3></div>
+    <div class="panel-body">
+      <form method="post" action="/meetings" class="form-grid">
+        <div class="field"><label>التاريخ</label><input type="date" name="meeting_date" required></div>
+        <div class="field">
+          <label>النوع</label>
+          <select name="meeting_type">
+            <option>حضوري</option>
+            <option>عن بُعد</option>
+            <option>بريد / ملاحظات مكتوبة</option>
+            <option>لجنة متابعة</option>
+          </select>
+        </div>
+        <div class="field full"><label>المواضيع المناقشة</label><textarea name="topics" required></textarea></div>
+        <div class="field full"><label>القرارات</label><textarea name="decisions"></textarea></div>
+        <div class="field full"><label>المهام التالية</label><textarea name="next_actions"></textarea></div>
+        <div class="field"><label>موعد اللقاء القادم</label><input type="date" name="next_meeting"></div>
+        <div class="actions full"><button class="btn btn-primary" type="submit">حفظ اللقاء</button></div>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h3>السجل ({{ items|length }})</h3></div>
+    <div class="panel-body">
+      {% if items %}
+      <div class="list-stack">
+        {% for item in items %}
+        <div class="list-item">
+          <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+            <div>
+              <h4>{{ item.meeting_date }} · {{ item.meeting_type }}</h4>
+              <p><strong>المواضيع:</strong> {{ item.topics }}</p>
+              {% if item.decisions %}<p><strong>القرارات:</strong> {{ item.decisions }}</p>{% endif %}
+              {% if item.next_actions %}<p><strong>التالي:</strong> {{ item.next_actions }}</p>{% endif %}
+              {% if item.next_meeting %}<p>اللقاء القادم: {{ item.next_meeting }}</p>{% endif %}
+            </div>
+            <form method="post" action="/meetings/{{ item.id }}/delete" data-confirm="حذف اللقاء؟">
+              <button class="btn btn-sm btn-danger" type="submit">حذف</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty"><strong>لا لقاءات</strong>ابدأ بتوثيق أول اجتماع إشراف.</div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

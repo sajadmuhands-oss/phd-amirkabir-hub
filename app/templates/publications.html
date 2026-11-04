@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}المنشورات{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <h2>المنشورات والمخرجات</h2>
+    <p class="subtitle">تتبّع الأوراق من المسودة حتى القبول — مؤشر مهم لتقييم مسار الدكتوراه.</p>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <section class="panel">
+    <div class="panel-head"><h3>إضافة منشور</h3></div>
+    <div class="panel-body">
+      <form method="post" action="/publications" class="form-grid">
+        <div class="field full"><label>العنوان</label><input name="title" required></div>
+        <div class="field"><label>المؤلفون</label><input name="authors"></div>
+        <div class="field"><label>المجلة / المؤتمر</label><input name="venue"></div>
+        <div class="field">
+          <label>النوع</label>
+          <select name="pub_type">
+            <option>مجلة</option>
+            <option>مؤتمر</option>
+            <option>فصل كتاب</option>
+            <option>تقرير فني</option>
+            <option>أخرى</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>الحالة</label>
+          <select name="status">
+            <option>مسودة</option>
+            <option>مُرسل</option>
+            <option>قيد التحكيم</option>
+            <option>مراجعة Minor</option>
+            <option>مراجعة Major</option>
+            <option>مقبول</option>
+            <option>منشور</option>
+            <option>مرفوض</option>
+          </select>
+        </div>
+        <div class="field"><label>السنة</label><input name="year"></div>
+        <div class="field"><label>DOI</label><input name="doi"></div>
+        <div class="field"><label>رابط</label><input name="url"></div>
+        <div class="field full"><label>ملاحظات</label><textarea name="notes"></textarea></div>
+        <div class="actions full"><button class="btn btn-primary" type="submit">حفظ</button></div>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h3>السجل ({{ items|length }})</h3></div>
+    <div class="panel-body">
+      {% if items %}
+      <div class="list-stack">
+        {% for item in items %}
+        <div class="list-item">
+          <div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+            <div>
+              <h4>{{ item.title }}</h4>
+              <p>
+                <span class="tag">{{ item.pub_type }}</span>
+                <span class="tag {% if item.status in ['مقبول','منشور'] %}ok{% elif item.status == 'مرفوض' %}danger{% else %}warn{% endif %}">{{ item.status }}</span>
+                {% if item.year %} · {{ item.year }}{% endif %}
+              </p>
+              {% if item.venue %}<p>{{ item.venue }}</p>{% endif %}
+              {% if item.authors %}<p>{{ item.authors }}</p>{% endif %}
+              {% if item.doi %}<p>DOI: {{ item.doi }}</p>{% endif %}
+              {% if item.url %}<p><a href="{{ item.url }}" target="_blank" rel="noopener">الرابط</a></p>{% endif %}
+            </div>
+            <form method="post" action="/publications/{{ item.id }}/delete" data-confirm="حذف المنشور؟">
+              <button class="btn btn-sm btn-danger" type="submit">حذف</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty"><strong>لا منشورات بعد</strong>أضف مسودتك الأولى ولو كانت قيد الكتابة.</div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}
