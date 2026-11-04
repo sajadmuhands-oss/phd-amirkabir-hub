@@ -2,11 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+
+load_dotenv()
 
 from .database import UPLOADS_DIR, Base, engine, get_db
 from .models import (

@@ -18,21 +18,21 @@ pip install -r requirements.txt
 uvicorn app.main:app --host 127.0.0.1 --port 8088 --reload
 ```
 
-## النشر على خادم
+## قاعدة البيانات
 
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8088
-```
+- محلياً: SQLite في `data/phd_hub.db`
+- على السحابة: عيّن `DATABASE_URL` لـ PostgreSQL (Render يضبطها تلقائياً)
 
-أو عبر Docker:
+## نشر دائم على Render (رابط + Postgres)
 
-```bash
-docker build -t phd-amirkabir .
-docker run -p 8088:8088 -v phd_data:/app/data -v phd_uploads:/app/uploads phd-amirkabir
-```
+1. ارفع المشروع إلى GitHub
+2. من [dashboard.render.com](https://dashboard.render.com) → **New** → **Blueprint**
+3. اختر المستودع → طبّق `render.yaml`
+4. بعد النشر يكون الرابط مثل: `https://phd-amirkabir.onrender.com`
+
+الخطة المجانية: Postgres لمدة 30 يوماً (يمكن الترقية)، والخدمة قد تدخل سكون بعد الخمول.
 
 ## ملاحظات
 
-- البيانات في `data/phd_hub.db`
-- الملفات في `uploads/`
-- لا تنشر على الإنترنت دون حماية إذا كانت الوثائق شخصية
+- الملفات المرفوعة محلياً في `uploads/`
+- على الخطة المجانية لـ Render الملفات غير دائمة بعد إعادة التشغيل (البيانات النصية محفوظة في Postgres)
