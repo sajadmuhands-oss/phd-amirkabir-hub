@@ -2,32 +2,62 @@ document.addEventListener("DOMContentLoaded", () => {
   const sidebar = document.querySelector(".sidebar");
   const toggle = document.querySelector(".mobile-toggle");
   const backdrop = document.querySelector("#sidebarBackdrop");
+  const menuClose = document.querySelector("#menuClose");
+
+  const isMobile = () => window.matchMedia("(max-width: 900px)").matches;
 
   const setMenu = (open) => {
     if (!sidebar) return;
     sidebar.classList.toggle("open", open);
+    document.body.classList.toggle("menu-open", open && isMobile());
     if (backdrop) {
       backdrop.classList.toggle("show", open);
       backdrop.hidden = !open;
+      backdrop.setAttribute("aria-hidden", open ? "false" : "true");
+    }
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
     }
   };
 
   if (toggle && sidebar) {
     toggle.addEventListener("click", (e) => {
+      e.preventDefault();
       e.stopPropagation();
       setMenu(!sidebar.classList.contains("open"));
     });
   }
-  backdrop?.addEventListener("click", () => setMenu(false));
 
-  document.addEventListener("click", (e) => {
-    if (
-      sidebar?.classList.contains("open") &&
-      !sidebar.contains(e.target) &&
-      !toggle?.contains(e.target)
-    ) {
+  menuClose?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setMenu(false);
+  });
+
+  if (backdrop) {
+    backdrop.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       setMenu(false);
-    }
+    });
+  }
+
+  // ضمان انتقال الروابط حتى لو أُغلق الرسم أثناء اللمس
+  sidebar?.querySelectorAll(".nav a").forEach((link) => {
+    link.addEventListener(
+      "click",
+      (e) => {
+        const href = link.getAttribute("href");
+        if (!href || href.startsWith("#")) return;
+        e.preventDefault();
+        window.location.assign(href);
+      },
+      { passive: false }
+    );
+  });
+
+  window.addEventListener("resize", () => {
+    if (!isMobile()) setMenu(false);
   });
 
 

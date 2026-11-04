@@ -17,14 +17,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="/static/css/app.css?v=dq4">
+  <link rel="stylesheet" href="/static/css/app.css?v=dq8">
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar">
       <div class="sidebar-topbar">
         <span><i class="fa-solid fa-graduation-cap"></i> جامعة أمير كبير</span>
-        <span>PhD · Research</span>
+        <button type="button" class="menu-close" id="menuClose" aria-label="إغلاق القائمة"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="brand">
         <div class="brand-row">
@@ -74,8 +74,8 @@
       </footer>
     </div>
   </div>
-  <div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
-  <button class="mobile-toggle" type="button" aria-label="القائمة"><i class="fa-solid fa-bars"></i></button>
-  <script src="/static/js/app.js?v=dq5"></script>
+  <button type="button" class="sidebar-backdrop" id="sidebarBackdrop" hidden aria-hidden="true" aria-label="إغلاق القائمة"></button>
+  <button class="mobile-toggle" type="button" aria-label="القائمة" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
+  <script src="/static/js/app.js?v=dq8"></script>
 </body>
 </html>
