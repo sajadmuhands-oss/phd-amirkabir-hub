@@ -12,7 +12,7 @@
   <section class="panel">
     <div class="panel-head"><h3>إضافة منشور</h3></div>
     <div class="panel-body">
-      <form method="post" action="/publications" class="form-grid">
+      <form method="post" action="{{ u('/publications') }}" class="form-grid">
         <div class="field full"><label>العنوان</label><input name="title" required></div>
         <div class="field"><label>المؤلفون</label><input name="authors"></div>
         <div class="field"><label>المجلة / المؤتمر</label><input name="venue"></div>
@@ -68,7 +68,7 @@
               {% if item.doi %}<p>DOI: {{ item.doi }}</p>{% endif %}
               {% if item.url %}<p><a href="{{ item.url }}" target="_blank" rel="noopener">الرابط</a></p>{% endif %}
             </div>
-            <form method="post" action="/publications/{{ item.id }}/delete" data-confirm="حذف المنشور؟">
+            <form method="post" action="{{ u('/publications/{{ item.id }}/delete') }}" data-confirm="حذف المنشور؟">
               <button class="btn btn-sm btn-danger" type="submit">حذف</button>
             </form>
           </div>

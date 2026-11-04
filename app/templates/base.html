@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="/static/css/app.css?v=dq8">
+  <link rel="stylesheet" href="{{ u('/static/css/app.css') }}?v=dq8">
 </head>
 <body>
   <div class="app-shell">
@@ -37,17 +37,17 @@
         <p>جامعة أمير كبير — إدارة المسار الأكاديمي والإقامة والأرشيف العلمي</p>
       </div>
       <nav class="nav">
-        <a href="/" class="{{ 'active' if active == 'dashboard' else '' }}"><span class="nav-ico"><i class="fa-solid fa-chart-pie"></i></span> لوحة التحكم</a>
-        <a href="/profile" class="{{ 'active' if active == 'profile' else '' }}"><span class="nav-ico"><i class="fa-solid fa-id-card"></i></span> الملف الأكاديمي</a>
-        <a href="/residence" class="{{ 'active' if active == 'residence' else '' }}"><span class="nav-ico"><i class="fa-solid fa-calendar-check"></i></span> متتبع الإقامة</a>
-        <a href="/thesis" class="{{ 'active' if active == 'thesis' else '' }}"><span class="nav-ico"><i class="fa-solid fa-book-open"></i></span> فصول الأطروحة</a>
-        <a href="/research" class="{{ 'active' if active == 'research' else '' }}"><span class="nav-ico"><i class="fa-solid fa-flask"></i></span> المواد البحثية</a>
-        <a href="/presentations" class="{{ 'active' if active == 'presentations' else '' }}"><span class="nav-ico"><i class="fa-solid fa-chalkboard-user"></i></span> العروض التقديمية</a>
-        <a href="/documents" class="{{ 'active' if active == 'documents' else '' }}"><span class="nav-ico"><i class="fa-solid fa-folder-open"></i></span> الوثائق الدراسية</a>
-        <a href="/publications" class="{{ 'active' if active == 'publications' else '' }}"><span class="nav-ico"><i class="fa-solid fa-newspaper"></i></span> المنشورات</a>
-        <a href="/meetings" class="{{ 'active' if active == 'meetings' else '' }}"><span class="nav-ico"><i class="fa-solid fa-comments"></i></span> لقاءات المشرف</a>
-        <a href="/tasks" class="{{ 'active' if active == 'tasks' else '' }}"><span class="nav-ico"><i class="fa-solid fa-list-check"></i></span> المهام والمواعيد</a>
-        <a href="/notes" class="{{ 'active' if active == 'notes' else '' }}"><span class="nav-ico"><i class="fa-solid fa-pen-nib"></i></span> المفكرة البحثية</a>
+        <a href="{{ u('/') }}" class="{{ 'active' if active == 'dashboard' else '' }}"><span class="nav-ico"><i class="fa-solid fa-chart-pie"></i></span> لوحة التحكم</a>
+        <a href="{{ u('/profile') }}" class="{{ 'active' if active == 'profile' else '' }}"><span class="nav-ico"><i class="fa-solid fa-id-card"></i></span> الملف الأكاديمي</a>
+        <a href="{{ u('/residence') }}" class="{{ 'active' if active == 'residence' else '' }}"><span class="nav-ico"><i class="fa-solid fa-calendar-check"></i></span> متتبع الإقامة</a>
+        <a href="{{ u('/thesis') }}" class="{{ 'active' if active == 'thesis' else '' }}"><span class="nav-ico"><i class="fa-solid fa-book-open"></i></span> فصول الأطروحة</a>
+        <a href="{{ u('/research') }}" class="{{ 'active' if active == 'research' else '' }}"><span class="nav-ico"><i class="fa-solid fa-flask"></i></span> المواد البحثية</a>
+        <a href="{{ u('/presentations') }}" class="{{ 'active' if active == 'presentations' else '' }}"><span class="nav-ico"><i class="fa-solid fa-chalkboard-user"></i></span> العروض التقديمية</a>
+        <a href="{{ u('/documents') }}" class="{{ 'active' if active == 'documents' else '' }}"><span class="nav-ico"><i class="fa-solid fa-folder-open"></i></span> الوثائق الدراسية</a>
+        <a href="{{ u('/publications') }}" class="{{ 'active' if active == 'publications' else '' }}"><span class="nav-ico"><i class="fa-solid fa-newspaper"></i></span> المنشورات</a>
+        <a href="{{ u('/meetings') }}" class="{{ 'active' if active == 'meetings' else '' }}"><span class="nav-ico"><i class="fa-solid fa-comments"></i></span> لقاءات المشرف</a>
+        <a href="{{ u('/tasks') }}" class="{{ 'active' if active == 'tasks' else '' }}"><span class="nav-ico"><i class="fa-solid fa-list-check"></i></span> المهام والمواعيد</a>
+        <a href="{{ u('/notes') }}" class="{{ 'active' if active == 'notes' else '' }}"><span class="nav-ico"><i class="fa-solid fa-pen-nib"></i></span> المفكرة البحثية</a>
       </nav>
       <div class="sidebar-actions">
         <button type="button" class="theme-toggle" id="themeToggle" aria-label="تبديل الوضع">
@@ -76,6 +76,6 @@
   </div>
   <button type="button" class="sidebar-backdrop" id="sidebarBackdrop" hidden aria-hidden="true" aria-label="إغلاق القائمة"></button>
   <button class="mobile-toggle" type="button" aria-label="القائمة" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
-  <script src="/static/js/app.js?v=dq8"></script>
+  <script src="{{ u('/static/js/app.js') }}?v=dq8"></script>
 </body>
 </html>

@@ -12,7 +12,7 @@
   <section class="panel">
     <div class="panel-head"><h3>مذكرة جديدة</h3></div>
     <div class="panel-body">
-      <form method="post" action="/notes" class="form-grid">
+      <form method="post" action="{{ u('/notes') }}" class="form-grid">
         <div class="field full"><label>العنوان</label><input name="title" required></div>
         <div class="field">
           <label>الحالة الذهنية</label>
@@ -48,7 +48,7 @@
               </p>
               <p style="white-space:pre-wrap">{{ item.content }}</p>
             </div>
-            <form method="post" action="/notes/{{ item.id }}/delete" data-confirm="حذف المذكرة؟">
+            <form method="post" action="{{ u('/notes/{{ item.id }}/delete') }}" data-confirm="حذف المذكرة؟">
               <button class="btn btn-sm btn-danger" type="submit">حذف</button>
             </form>
           </div>

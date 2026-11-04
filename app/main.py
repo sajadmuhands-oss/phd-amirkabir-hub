@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -36,18 +37,29 @@ from .services import (
 )
 
 BASE_DIR = Path(__file__).resolve().parent
+BASE_PATH = (os.getenv("BASE_PATH") or "").rstrip("/")
 
-app = FastAPI(
+
+def u(path: str = "/") -> str:
+    """Prefix app paths with BASE_PATH (e.g. /sajad_phd)."""
+    if not path.startswith("/"):
+        path = "/" + path
+    return f"{BASE_PATH}{path}" if BASE_PATH else path
+
+
+inner = FastAPI(
     title="طلاب الدكتوراه البحثية في جامعة أمير كبير",
     docs_url=None,
     redoc_url=None,
 )
-app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+inner.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 templates.env.globals["format_bytes"] = format_bytes
+templates.env.globals["u"] = u
+templates.env.globals["base_path"] = BASE_PATH
 
 
-@app.on_event("startup")
+@inner.on_event("startup")
 def on_startup():
     Base.metadata.create_all(bind=engine)
     db = next(get_db())
@@ -59,6 +71,8 @@ def on_startup():
 
 
 def flash_redirect(url: str, message: str = "", error: str = "") -> RedirectResponse:
+    if url.startswith("/") and BASE_PATH and not url.startswith(BASE_PATH + "/") and url != BASE_PATH:
+        url = u(url)
     sep = "&" if "?" in url else "?"
     if message:
         url = f"{url}{sep}ok={message}"
@@ -70,7 +84,7 @@ def flash_redirect(url: str, message: str = "", error: str = "") -> RedirectResp
 # ─── Dashboard ───────────────────────────────────────────────
 
 
-@app.get("/")
+@inner.get("/")
 def dashboard(request: Request, db: Session = Depends(get_db)):
     profile = get_or_create_profile(db)
     residence = residence_summary(db, profile)
@@ -125,7 +139,7 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
 # ─── Profile ─────────────────────────────────────────────────
 
 
-@app.get("/profile")
+@inner.get("/profile")
 def profile_page(request: Request, db: Session = Depends(get_db)):
     profile = get_or_create_profile(db)
     return templates.TemplateResponse(
@@ -140,7 +154,7 @@ def profile_page(request: Request, db: Session = Depends(get_db)):
     )
 
 
-@app.post("/profile")
+@inner.post("/profile")
 def profile_save(
     full_name: str = Form(""),
     full_name_en: str = Form(""),
@@ -197,7 +211,7 @@ def profile_save(
 # ─── Research materials ──────────────────────────────────────
 
 
-@app.get("/research")
+@inner.get("/research")
 def research_list(request: Request, db: Session = Depends(get_db)):
     items = db.query(ResearchItem).order_by(ResearchItem.created_at.desc()).all()
     return templates.TemplateResponse(
@@ -212,7 +226,7 @@ def research_list(request: Request, db: Session = Depends(get_db)):
     )
 
 
-@app.post("/research")
+@inner.post("/research")
 async def research_upload(
     title: str = Form(...),
     category: str = Form("ورقة بحثية"),
@@ -247,7 +261,7 @@ async def research_upload(
     return flash_redirect("/research", "أُضيفت المادة البحثية.")
 
 
-@app.post("/research/{item_id}/delete")
+@inner.post("/research/{item_id}/delete")
 def research_delete(item_id: int, db: Session = Depends(get_db)):
     item = db.get(ResearchItem, item_id)
     if item:
@@ -260,7 +274,7 @@ def research_delete(item_id: int, db: Session = Depends(get_db)):
 # ─── Presentations ───────────────────────────────────────────
 
 
-@app.get("/presentations")
+@inner.get("/presentations")
 def presentations_list(request: Request, db: Session = Depends(get_db)):
     items = db.query(Presentation).order_by(Presentation.created_at.desc()).all()
     return templates.TemplateResponse(
@@ -275,7 +289,7 @@ def presentations_list(request: Request, db: Session = Depends(get_db)):
     )
 
 
-@app.post("/presentations")
+@inner.post("/presentations")
 async def presentations_upload(
     title: str = Form(...),
     event_name: str = Form(""),
@@ -308,7 +322,7 @@ async def presentations_upload(
     return flash_redirect("/presentations", "أُضيف العرض التقديمي.")
 
 
-@app.post("/presentations/{item_id}/delete")
+@inner.post("/presentations/{item_id}/delete")
 def presentations_delete(item_id: int, db: Session = Depends(get_db)):
     item = db.get(Presentation, item_id)
     if item:
@@ -321,7 +335,7 @@ def presentations_delete(item_id: int, db: Session = Depends(get_db)):
 # ─── Documents ───────────────────────────────────────────────
 
 
-@app.get("/documents")
+@inner.get("/documents")
 def documents_list(request: Request, db: Session = Depends(get_db)):
     items = db.query(AcademicDocument).order_by(AcademicDocument.created_at.desc()).all()
     return templates.TemplateResponse(
@@ -336,7 +350,7 @@ def documents_list(request: Request, db: Session = Depends(get_db)):
     )
 
 
-@app.post("/documents")
+@inner.post("/documents")
 async def documents_upload(
     title: str = Form(...),
     doc_type: str = Form("أخرى"),
@@ -371,7 +385,7 @@ async def documents_upload(
     return flash_redirect("/documents", "أُضيفت الوثيقة.")
 
 
-@app.post("/documents/{item_id}/delete")
+@inner.post("/documents/{item_id}/delete")
 def documents_delete(item_id: int, db: Session = Depends(get_db)):
     item = db.get(AcademicDocument, item_id)
     if item:
@@ -384,7 +398,7 @@ def documents_delete(item_id: int, db: Session = Depends(get_db)):
 # ─── File download ───────────────────────────────────────────
 
 
-@app.get("/files/{category}/{filename}")
+@inner.get("/files/{category}/{filename}")
 def download_file(category: str, filename: str):
     if category not in {"research", "presentations", "documents", "misc"}:
         raise HTTPException(404)
@@ -399,7 +413,7 @@ def download_file(category: str, filename: str):
 # ─── Residence ───────────────────────────────────────────────
 
 
-@app.get("/residence")
+@inner.get("/residence")
 def residence_page(request: Request, db: Session = Depends(get_db)):
     profile = get_or_create_profile(db)
     summary = residence_summary(db, profile)
@@ -416,7 +430,7 @@ def residence_page(request: Request, db: Session = Depends(get_db)):
     )
 
 
-@app.post("/residence")
+@inner.post("/residence")
 def residence_add(
     entry_date: str = Form(...),
     exit_date: str = Form(""),
@@ -460,7 +474,7 @@ def residence_add(
     return flash_redirect("/residence", "سُجّلت فترة الإقامة.")
 
 
-@app.post("/residence/{stay_id}/close")
+@inner.post("/residence/{stay_id}/close")
 def residence_close(
     stay_id: int,
     exit_date: str = Form(...),
@@ -480,7 +494,7 @@ def residence_close(
     return flash_redirect("/residence", "أُغلقت فترة الإقامة.")
 
 
-@app.post("/residence/{stay_id}/delete")
+@inner.post("/residence/{stay_id}/delete")
 def residence_delete(stay_id: int, db: Session = Depends(get_db)):
     stay = db.get(ResidenceStay, stay_id)
     if stay:
@@ -492,7 +506,7 @@ def residence_delete(stay_id: int, db: Session = Depends(get_db)):
 # ─── Thesis ──────────────────────────────────────────────────
 
 
-@app.get("/thesis")
+@inner.get("/thesis")
 def thesis_page(request: Request, db: Session = Depends(get_db)):
     chapters = db.query(ThesisChapter).order_by(ThesisChapter.chapter_number.asc()).all()
     progress = thesis_progress(db)
@@ -509,7 +523,7 @@ def thesis_page(request: Request, db: Session = Depends(get_db)):
     )
 
 
-@app.post("/thesis")
+@inner.post("/thesis")
 def thesis_add(
     chapter_number: int = Form(1),
     title: str = Form(...),
@@ -540,7 +554,7 @@ def thesis_add(
     return flash_redirect("/thesis", "أُضيف الفصل.")
 
 
-@app.post("/thesis/{chapter_id}")
+@inner.post("/thesis/{chapter_id}")
 def thesis_update(
     chapter_id: int,
     chapter_number: int = Form(1),
@@ -571,7 +585,7 @@ def thesis_update(
     return flash_redirect("/thesis", "حُدّث الفصل.")
 
 
-@app.post("/thesis/{chapter_id}/delete")
+@inner.post("/thesis/{chapter_id}/delete")
 def thesis_delete(chapter_id: int, db: Session = Depends(get_db)):
     chapter = db.get(ThesisChapter, chapter_id)
     if chapter:
@@ -583,7 +597,7 @@ def thesis_delete(chapter_id: int, db: Session = Depends(get_db)):
 # ─── Meetings ────────────────────────────────────────────────
 
 
-@app.get("/meetings")
+@inner.get("/meetings")
 def meetings_page(request: Request, db: Session = Depends(get_db)):
     items = db.query(SupervisorMeeting).order_by(SupervisorMeeting.meeting_date.desc()).all()
     profile = get_or_create_profile(db)
@@ -600,7 +614,7 @@ def meetings_page(request: Request, db: Session = Depends(get_db)):
     )
 
 
-@app.post("/meetings")
+@inner.post("/meetings")
 def meetings_add(
     meeting_date: str = Form(...),
     meeting_type: str = Form("حضوري"),
@@ -627,7 +641,7 @@ def meetings_add(
     return flash_redirect("/meetings", "سُجّل اللقاء.")
 
 
-@app.post("/meetings/{item_id}/delete")
+@inner.post("/meetings/{item_id}/delete")
 def meetings_delete(item_id: int, db: Session = Depends(get_db)):
     item = db.get(SupervisorMeeting, item_id)
     if item:
@@ -639,7 +653,7 @@ def meetings_delete(item_id: int, db: Session = Depends(get_db)):
 # ─── Publications ────────────────────────────────────────────
 
 
-@app.get("/publications")
+@inner.get("/publications")
 def publications_page(request: Request, db: Session = Depends(get_db)):
     items = db.query(Publication).order_by(Publication.created_at.desc()).all()
     return templates.TemplateResponse(
@@ -654,7 +668,7 @@ def publications_page(request: Request, db: Session = Depends(get_db)):
     )
 
 
-@app.post("/publications")
+@inner.post("/publications")
 def publications_add(
     title: str = Form(...),
     authors: str = Form(""),
@@ -684,7 +698,7 @@ def publications_add(
     return flash_redirect("/publications", "أُضيف المنشور.")
 
 
-@app.post("/publications/{item_id}/delete")
+@inner.post("/publications/{item_id}/delete")
 def publications_delete(item_id: int, db: Session = Depends(get_db)):
     item = db.get(Publication, item_id)
     if item:
@@ -696,7 +710,7 @@ def publications_delete(item_id: int, db: Session = Depends(get_db)):
 # ─── Tasks ───────────────────────────────────────────────────
 
 
-@app.get("/tasks")
+@inner.get("/tasks")
 def tasks_page(request: Request, db: Session = Depends(get_db)):
     items = db.query(AcademicTask).order_by(AcademicTask.due_date.asc()).all()
     return templates.TemplateResponse(
@@ -711,7 +725,7 @@ def tasks_page(request: Request, db: Session = Depends(get_db)):
     )
 
 
-@app.post("/tasks")
+@inner.post("/tasks")
 def tasks_add(
     title: str = Form(...),
     category: str = Form("بحث"),
@@ -735,7 +749,7 @@ def tasks_add(
     return flash_redirect("/tasks", "أُضيفت المهمة.")
 
 
-@app.post("/tasks/{item_id}/toggle")
+@inner.post("/tasks/{item_id}/toggle")
 def tasks_toggle(item_id: int, db: Session = Depends(get_db)):
     item = db.get(AcademicTask, item_id)
     if item:
@@ -744,7 +758,7 @@ def tasks_toggle(item_id: int, db: Session = Depends(get_db)):
     return flash_redirect("/tasks", "حُدّثت المهمة.")
 
 
-@app.post("/tasks/{item_id}/delete")
+@inner.post("/tasks/{item_id}/delete")
 def tasks_delete(item_id: int, db: Session = Depends(get_db)):
     item = db.get(AcademicTask, item_id)
     if item:
@@ -756,7 +770,7 @@ def tasks_delete(item_id: int, db: Session = Depends(get_db)):
 # ─── Notes / Journal ─────────────────────────────────────────
 
 
-@app.get("/notes")
+@inner.get("/notes")
 def notes_page(request: Request, db: Session = Depends(get_db)):
     items = db.query(ResearchNote).order_by(ResearchNote.updated_at.desc()).all()
     return templates.TemplateResponse(
@@ -771,7 +785,7 @@ def notes_page(request: Request, db: Session = Depends(get_db)):
     )
 
 
-@app.post("/notes")
+@inner.post("/notes")
 def notes_add(
     title: str = Form(...),
     content: str = Form(""),
@@ -796,10 +810,28 @@ def notes_add(
     return flash_redirect("/notes", "أُضيفت المذكرة.")
 
 
-@app.post("/notes/{item_id}/delete")
+@inner.post("/notes/{item_id}/delete")
 def notes_delete(item_id: int, db: Session = Depends(get_db)):
     item = db.get(ResearchNote, item_id)
     if item:
         db.delete(item)
         db.commit()
     return flash_redirect("/notes", "حُذفت المذكرة.")
+
+
+# Public ASGI app: optionally mounted under BASE_PATH (e.g. /sajad_phd)
+if BASE_PATH:
+    app = FastAPI(docs_url=None, redoc_url=None)
+
+    @app.on_event("startup")
+    def _outer_startup():
+        on_startup()
+
+    @app.get("/")
+    def _root_to_base():
+        return RedirectResponse(u("/"), status_code=307)
+
+    app.mount(BASE_PATH, inner)
+else:
+    app = inner
+

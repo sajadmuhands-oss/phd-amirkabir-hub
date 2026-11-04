@@ -12,7 +12,7 @@
 <section class="panel" style="margin-bottom:1.2rem">
   <div class="panel-head"><h3>إضافة / تحديث نظرة عامة</h3></div>
   <div class="panel-body">
-    <form method="post" action="/thesis" class="form-grid">
+    <form method="post" action="{{ u('/thesis') }}" class="form-grid">
       <div class="field"><label>رقم الفصل</label><input type="number" name="chapter_number" value="1" min="0"></div>
       <div class="field"><label>العنوان</label><input name="title" required></div>
       <div class="field">
@@ -48,7 +48,7 @@
       <p style="margin:.7rem 0;color:var(--slate);font-size:.88rem">
         {{ c.progress_percent }}% · {{ c.word_count }} / {{ c.target_words or '—' }} كلمة
       </p>
-      <form method="post" action="/thesis/{{ c.id }}" class="form-grid">
+      <form method="post" action="{{ u('/thesis/{{ c.id }}') }}" class="form-grid">
         <div class="field"><label>رقم</label><input type="number" name="chapter_number" value="{{ c.chapter_number }}"></div>
         <div class="field"><label>العنوان</label><input name="title" value="{{ c.title }}" required></div>
         <div class="field">

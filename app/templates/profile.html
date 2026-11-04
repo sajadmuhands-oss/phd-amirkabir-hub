@@ -11,7 +11,7 @@
 <section class="panel">
   <div class="panel-head"><h3>الهوية والمسار الدراسي</h3></div>
   <div class="panel-body">
-    <form method="post" action="/profile" class="form-grid">
+    <form method="post" action="{{ u('/profile') }}" class="form-grid">
       <div class="field"><label>الاسم الكامل (عربي)</label><input name="full_name" value="{{ profile.full_name }}" required></div>
       <div class="field"><label>الاسم (إنجليزي)</label><input name="full_name_en" value="{{ profile.full_name_en }}"></div>
       <div class="field"><label>البريد الإلكتروني</label><input type="email" name="email" value="{{ profile.email }}"></div>

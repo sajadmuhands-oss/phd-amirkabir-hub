@@ -12,7 +12,7 @@
   <section class="panel">
     <div class="panel-head"><h3>مهمة جديدة</h3></div>
     <div class="panel-body">
-      <form method="post" action="/tasks" class="form-grid">
+      <form method="post" action="{{ u('/tasks') }}" class="form-grid">
         <div class="field full"><label>العنوان</label><input name="title" required></div>
         <div class="field">
           <label>التصنيف</label>
@@ -68,10 +68,10 @@
               {% if item.description %}<p>{{ item.description }}</p>{% endif %}
             </div>
             <div class="actions" style="margin:0">
-              <form method="post" action="/tasks/{{ item.id }}/toggle">
+              <form method="post" action="{{ u('/tasks/{{ item.id }}/toggle') }}">
                 <button class="btn btn-sm btn-ghost" type="submit">{% if item.status == 'مكتمل' %}إعادة فتح{% else %}إكمال{% endif %}</button>
               </form>
-              <form method="post" action="/tasks/{{ item.id }}/delete" data-confirm="حذف المهمة؟">
+              <form method="post" action="{{ u('/tasks/{{ item.id }}/delete') }}" data-confirm="حذف المهمة؟">
                 <button class="btn btn-sm btn-danger" type="submit">حذف</button>
               </form>
             </div>

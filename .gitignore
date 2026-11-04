@@ -8,3 +8,8 @@ uploads/
 venv/
 *.log
 .DS_Store
+
+.gh-token
+*.pat
+
+.env.cloudflare

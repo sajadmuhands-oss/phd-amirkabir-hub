@@ -29,22 +29,22 @@
   <div class="stat">
     <div class="label">مواد بحثية</div>
     <div class="value">{{ counts.research }}</div>
-    <div class="hint"><a href="/research">إدارة الأرشيف ←</a></div>
+    <div class="hint"><a href="{{ u('/research') }}">إدارة الأرشيف ←</a></div>
   </div>
   <div class="stat">
     <div class="label">عروض تقديمية</div>
     <div class="value">{{ counts.presentations }}</div>
-    <div class="hint"><a href="/presentations">عرض المكتبة ←</a></div>
+    <div class="hint"><a href="{{ u('/presentations') }}">عرض المكتبة ←</a></div>
   </div>
   <div class="stat">
     <div class="label">وثائق دراسية</div>
     <div class="value">{{ counts.documents }}</div>
-    <div class="hint"><a href="/documents">الأرشيف الرسمي ←</a></div>
+    <div class="hint"><a href="{{ u('/documents') }}">الأرشيف الرسمي ←</a></div>
   </div>
   <div class="stat">
     <div class="label">منشورات</div>
     <div class="value">{{ counts.publications }}</div>
-    <div class="hint"><a href="/publications">سجل النشر ←</a></div>
+    <div class="hint"><a href="{{ u('/publications') }}">سجل النشر ←</a></div>
   </div>
 </div>
 
@@ -52,7 +52,7 @@
   <section class="panel">
     <div class="panel-head">
       <h3>متطلب الإقامة</h3>
-      <a class="btn btn-sm btn-ghost" href="/residence">التفاصيل</a>
+      <a class="btn btn-sm btn-ghost" href="{{ u('/residence') }}">التفاصيل</a>
     </div>
     <div class="panel-body">
       <div class="meter-big">
@@ -82,7 +82,7 @@
   <section class="panel">
     <div class="panel-head">
       <h3>تقدم الأطروحة</h3>
-      <a class="btn btn-sm btn-ghost" href="/thesis">الفصول</a>
+      <a class="btn btn-sm btn-ghost" href="{{ u('/thesis') }}">الفصول</a>
     </div>
     <div class="panel-body">
       <div class="stat" style="box-shadow:none;padding:0;background:transparent;border:0">
@@ -100,7 +100,7 @@
 
 <div class="grid grid-3" style="margin-top:1.2rem">
   <section class="panel">
-    <div class="panel-head"><h3>مهام قادمة</h3><a class="btn btn-sm btn-ghost" href="/tasks">الكل</a></div>
+    <div class="panel-head"><h3>مهام قادمة</h3><a class="btn btn-sm btn-ghost" href="{{ u('/tasks') }}">الكل</a></div>
     <div class="panel-body">
       {% if tasks %}
       <div class="list-stack">
@@ -118,7 +118,7 @@
   </section>
 
   <section class="panel">
-    <div class="panel-head"><h3>آخر اللقاءات</h3><a class="btn btn-sm btn-ghost" href="/meetings">السجل</a></div>
+    <div class="panel-head"><h3>آخر اللقاءات</h3><a class="btn btn-sm btn-ghost" href="{{ u('/meetings') }}">السجل</a></div>
     <div class="panel-body">
       {% if meetings %}
       <div class="list-stack">
@@ -136,7 +136,7 @@
   </section>
 
   <section class="panel">
-    <div class="panel-head"><h3>مذكرات بحثية</h3><a class="btn btn-sm btn-ghost" href="/notes">المفكرة</a></div>
+    <div class="panel-head"><h3>مذكرات بحثية</h3><a class="btn btn-sm btn-ghost" href="{{ u('/notes') }}">المفكرة</a></div>
     <div class="panel-body">
       {% if notes %}
       <div class="list-stack">

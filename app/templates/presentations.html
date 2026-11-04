@@ -12,7 +12,7 @@
   <section class="panel">
     <div class="panel-head"><h3>إضافة عرض</h3></div>
     <div class="panel-body">
-      <form method="post" action="/presentations" enctype="multipart/form-data" class="form-grid">
+      <form method="post" action="{{ u('/presentations') }}" enctype="multipart/form-data" class="form-grid">
         <div class="field full"><label>عنوان العرض</label><input name="title" required></div>
         <div class="field"><label>الفعالية / السيمينار</label><input name="event_name"></div>
         <div class="field"><label>التاريخ</label><input type="date" name="event_date"></div>
@@ -41,12 +41,12 @@
               </p>
               {% if item.filename %}
               <p style="margin-top:.4rem">
-                <a href="/files/presentations/{{ item.filename }}">{{ item.original_name or 'تحميل' }}</a>
+                <a href="{{ u('/files/presentations/{{ item.filename }}') }}">{{ item.original_name or 'تحميل' }}</a>
                 · {{ format_bytes(item.file_size) }}
               </p>
               {% endif %}
             </div>
-            <form method="post" action="/presentations/{{ item.id }}/delete" data-confirm="حذف العرض؟">
+            <form method="post" action="{{ u('/presentations/{{ item.id }}/delete') }}" data-confirm="حذف العرض؟">
               <button class="btn btn-sm btn-danger" type="submit">حذف</button>
             </form>
           </div>

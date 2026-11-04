@@ -16,7 +16,7 @@
   <section class="panel">
     <div class="panel-head"><h3>تسجيل لقاء</h3></div>
     <div class="panel-body">
-      <form method="post" action="/meetings" class="form-grid">
+      <form method="post" action="{{ u('/meetings') }}" class="form-grid">
         <div class="field"><label>التاريخ</label><input type="date" name="meeting_date" required></div>
         <div class="field">
           <label>النوع</label>
@@ -51,7 +51,7 @@
               {% if item.next_actions %}<p><strong>التالي:</strong> {{ item.next_actions }}</p>{% endif %}
               {% if item.next_meeting %}<p>اللقاء القادم: {{ item.next_meeting }}</p>{% endif %}
             </div>
-            <form method="post" action="/meetings/{{ item.id }}/delete" data-confirm="حذف اللقاء؟">
+            <form method="post" action="{{ u('/meetings/{{ item.id }}/delete') }}" data-confirm="حذف اللقاء؟">
               <button class="btn btn-sm btn-danger" type="submit">حذف</button>
             </form>
           </div>

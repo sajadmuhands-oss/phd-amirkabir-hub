@@ -12,7 +12,7 @@
   <section class="panel">
     <div class="panel-head"><h3>رفع وثيقة</h3></div>
     <div class="panel-body">
-      <form method="post" action="/documents" enctype="multipart/form-data" class="form-grid">
+      <form method="post" action="{{ u('/documents') }}" enctype="multipart/form-data" class="form-grid">
         <div class="field full"><label>عنوان الوثيقة</label><input name="title" required></div>
         <div class="field">
           <label>النوع</label>
@@ -59,11 +59,11 @@
             </td>
             <td>
               {% if item.filename %}
-                <a href="/files/documents/{{ item.filename }}">{{ item.original_name or 'تحميل' }}</a>
+                <a href="{{ u('/files/documents/{{ item.filename }}') }}">{{ item.original_name or 'تحميل' }}</a>
               {% else %}—{% endif %}
             </td>
             <td>
-              <form method="post" action="/documents/{{ item.id }}/delete" data-confirm="حذف الوثيقة؟">
+              <form method="post" action="{{ u('/documents/{{ item.id }}/delete') }}" data-confirm="حذف الوثيقة؟">
                 <button class="btn btn-sm btn-danger" type="submit">حذف</button>
               </form>
             </td>

@@ -12,7 +12,7 @@
   <section class="panel">
     <div class="panel-head"><h3>رفع مادة جديدة</h3></div>
     <div class="panel-body">
-      <form method="post" action="/research" enctype="multipart/form-data" class="form-grid">
+      <form method="post" action="{{ u('/research') }}" enctype="multipart/form-data" class="form-grid">
         <div class="field full"><label>العنوان</label><input name="title" required></div>
         <div class="field">
           <label>التصنيف</label>
@@ -52,12 +52,12 @@
             <td><span class="tag">{{ item.category }}</span></td>
             <td>
               {% if item.filename %}
-                <a href="/files/research/{{ item.filename }}">{{ item.original_name or item.filename }}</a>
+                <a href="{{ u('/files/research/{{ item.filename }}') }}">{{ item.original_name or item.filename }}</a>
                 <div style="font-size:.75rem;color:var(--slate)">{{ format_bytes(item.file_size) }}</div>
               {% else %}—{% endif %}
             </td>
             <td>
-              <form method="post" action="/research/{{ item.id }}/delete" data-confirm="حذف هذه المادة؟">
+              <form method="post" action="{{ u('/research/{{ item.id }}/delete') }}" data-confirm="حذف هذه المادة؟">
                 <button class="btn btn-sm btn-danger" type="submit">حذف</button>
               </form>
             </td>

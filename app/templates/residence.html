@@ -34,7 +34,7 @@
   <section class="panel">
     <div class="panel-head"><h3>تسجيل فترة إقامة</h3></div>
     <div class="panel-body">
-      <form method="post" action="/residence" class="form-grid">
+      <form method="post" action="{{ u('/residence') }}" class="form-grid">
         <div class="field"><label>تاريخ الدخول</label><input type="date" name="entry_date" required></div>
         <div class="field" id="exit_date_wrap"><label>تاريخ المغادرة</label><input type="date" name="exit_date"></div>
         <div class="field"><label>الدولة</label><input name="country" value="{{ profile.study_country }}"></div>
@@ -83,12 +83,12 @@
             <td>
               <div class="actions" style="margin:0">
                 {% if p.is_current %}
-                <form method="post" action="/residence/{{ p.id }}/close" style="display:flex;gap:.35rem;align-items:center">
+                <form method="post" action="{{ u('/residence/{{ p.id }}/close') }}" style="display:flex;gap:.35rem;align-items:center">
                   <input type="date" name="exit_date" required style="padding:.35rem .5rem;border-radius:8px;border:1px solid var(--line)">
                   <button class="btn btn-sm btn-ghost" type="submit">إغلاق</button>
                 </form>
                 {% endif %}
-                <form method="post" action="/residence/{{ p.id }}/delete" data-confirm="حذف فترة الإقامة؟">
+                <form method="post" action="{{ u('/residence/{{ p.id }}/delete') }}" data-confirm="حذف فترة الإقامة؟">
                   <button class="btn btn-sm btn-danger" type="submit">حذف</button>
                 </form>
               </div>
