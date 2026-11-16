@@ -25,19 +25,23 @@ export function ensureBootstrapped() {
   return bootPromise;
 }
 
+/** True when ADMIN_PASSWORD is set and long enough to provision/sync admin. */
+export function hasAdminPasswordEnv(): boolean {
+  return (process.env.ADMIN_PASSWORD?.trim() || "").length >= 8;
+}
+
 /**
- * First admin is provisioned only from bound env secrets (ADMIN_PASSWORD),
- * never via a public HTTP endpoint. The designated ADMIN_EMAIL account is kept
- * in sync with ADMIN_PASSWORD (owner-controlled secret only — not a public API).
- * Other users are never touched.
+ * First admin is provisioned from ADMIN_PASSWORD / ADMIN_EMAIL (.env or hosted
+ * secrets), never via a public HTTP endpoint. The designated ADMIN_EMAIL account
+ * is upserted and kept in sync with ADMIN_PASSWORD. Other users are never touched.
  */
-async function ensureFirstAdminFromEnv() {
+export async function ensureFirstAdminFromEnv() {
   const adminPassword = process.env.ADMIN_PASSWORD?.trim() || "";
   if (adminPassword.length < 8) {
     const count = await prisma.user.count();
     if (count === 0) {
       console.error(
-        "ADMIN_PASSWORD (min 8 characters) is required to create the first admin; skipping user bootstrap."
+        "ADMIN_PASSWORD (min 8 characters) is required to create the first admin; set it in .env or Cursor secrets."
       );
     }
     return;
@@ -60,34 +64,43 @@ async function ensureFirstAdminFromEnv() {
         where: { email },
         data: { passwordHash, role: "admin", name },
       });
+    } else if (existingAdmin.role !== "admin" || existingAdmin.name !== name) {
+      await prisma.user.update({
+        where: { email },
+        data: { role: "admin", name },
+      });
     }
     return;
   }
 
+  // Create the designated admin even if other users already exist.
   const passwordHash = await bcrypt.hash(adminPassword, 12);
-
   try {
-    await prisma.$transaction(
-      async (tx) => {
-        const existing = await tx.user.count();
-        if (existing > 0) return;
-        await tx.user.create({
-          data: {
-            email,
-            name,
-            role: "admin",
-            passwordHash,
-          },
-        });
+    await prisma.user.create({
+      data: {
+        email,
+        name,
+        role: "admin",
+        passwordHash,
       },
-      { isolationLevel: "Serializable" }
-    );
+    });
   } catch (err) {
     // Concurrent bootstrap or unique conflict — admin may already exist.
     const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) return;
-    const count = await prisma.user.count();
-    if (count > 0) return;
+    if (existing) {
+      const matches = await bcrypt.compare(adminPassword, existing.passwordHash);
+      if (!matches) {
+        await prisma.user.update({
+          where: { email },
+          data: {
+            passwordHash: await bcrypt.hash(adminPassword, 12),
+            role: "admin",
+            name,
+          },
+        });
+      }
+      return;
+    }
     throw err;
   }
 }

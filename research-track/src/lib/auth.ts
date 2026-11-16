@@ -3,7 +3,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { ensureAuthEnv } from "@/lib/auth-env";
 import { hasAuthSecret, resolveAuthSecret } from "@/lib/auth-secret";
-import { ensureBootstrapped } from "@/lib/bootstrap";
+import {
+  ensureBootstrapped,
+  ensureFirstAdminFromEnv,
+} from "@/lib/bootstrap";
 import { prisma } from "@/lib/prisma";
 import { consumeRateLimit } from "@/lib/rate-limit";
 
@@ -44,14 +47,20 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        const envEmail = (process.env.ADMIN_EMAIL || "admin@alayen.edu.iq")
+          .toLowerCase()
+          .trim();
+
         let user = await prisma.user.findUnique({ where: { email } });
 
-        // If env bootstrap created the admin under ADMIN_EMAIL, allow that account only.
-        if (!user) {
-          const envEmail = (process.env.ADMIN_EMAIL || "admin@alayen.edu.iq")
-            .toLowerCase()
-            .trim();
-          if (email !== envEmail) return null;
+        // Retry env admin upsert on login so a missed first-boot still recovers
+        // from ADMIN_EMAIL / ADMIN_PASSWORD without requiring Cursor-only secrets.
+        if (!user && email === envEmail) {
+          try {
+            await ensureFirstAdminFromEnv();
+          } catch {
+            return null;
+          }
           user = await prisma.user.findUnique({ where: { email: envEmail } });
         }
         if (!user) return null;

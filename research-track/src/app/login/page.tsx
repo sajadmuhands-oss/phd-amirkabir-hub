@@ -8,9 +8,17 @@ import { useTranslations } from "next-intl";
 type Status = {
   authConfigured?: boolean;
   hasAdmin?: boolean;
+  hasAdminPasswordEnv?: boolean;
   hasScopusKey?: boolean;
   bootError?: string | null;
 };
+
+function adminMissingMessage(status: Status | null): string {
+  if (status?.hasAdminPasswordEnv) {
+    return "تعذر إنشاء حساب المدير رغم وجود ADMIN_PASSWORD. تحقق من اتصال قاعدة البيانات ثم أعد المحاولة، أو شغّل npm run db:seed محلياً.";
+  }
+  return "لم يُنشأ حساب المدير بعد. عيّن ADMIN_EMAIL وADMIN_PASSWORD (8 أحرف على الأقل) في ملف .env المحلي، أو احفظهما في أسرار Cursor للنسخة المستضافة، ثم أعد تشغيل التطبيق.";
+}
 
 function LoginForm() {
   const t = useTranslations("login");
@@ -54,7 +62,7 @@ function LoginForm() {
       if (refreshed) setStatus(refreshed);
       setError(
         refreshed && !refreshed.hasAdmin
-          ? "لم يُنشأ حساب المدير بعد. تأكد أن ADMIN_PASSWORD وADMIN_EMAIL محفوظان في أسرار Cursor."
+          ? adminMissingMessage(refreshed)
           : t("error")
       );
       return;
