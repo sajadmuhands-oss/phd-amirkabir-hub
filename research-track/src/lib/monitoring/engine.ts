@@ -8,7 +8,11 @@ import { prisma } from "@/lib/prisma";
 import { evaluateSuspiciousActivity } from "@/lib/monitoring/alerts";
 import { getSourceAdapter } from "@/lib/sources";
 import type { SourcePublication } from "@/lib/sources/types";
-import { hashContent, normalizeText } from "@/lib/utils";
+import {
+  firstSeenFromCoverDate,
+  hashContent,
+  normalizeText,
+} from "@/lib/utils";
 
 export type MonitorResult = {
   scanRunId: string;
@@ -161,7 +165,8 @@ function cleanId(value?: string | null) {
 async function processPublication(
   institutionId: string,
   pub: SourcePublication,
-  counters: { newCount: number; updatedCount: number }
+  counters: { newCount: number; updatedCount: number },
+  options?: { baseline?: boolean }
 ) {
   const eid = cleanId(pub.eid);
   const doi = cleanId(pub.doi);
@@ -173,8 +178,14 @@ async function processPublication(
   const contentHash = publicationHash(normalized);
   const existing = await findExistingPublication(institutionId, normalized);
   const now = new Date();
+  const baseline = Boolean(options?.baseline);
 
   if (!existing) {
+    // Baseline archive load must not look like "published today".
+    const firstSeenAt = baseline
+      ? firstSeenFromCoverDate(pub.coverDate, now)
+      : now;
+
     const created = await prisma.publication.create({
       data: {
         institutionId,
@@ -194,7 +205,7 @@ async function processPublication(
         openAccess: pub.openAccess ?? false,
         scopusUrl: pub.scopusUrl || null,
         contentHash,
-        firstSeenAt: now,
+        firstSeenAt,
         lastSeenAt: now,
         isActive: true,
         rawPayload: pub.rawPayload as object | undefined,
@@ -203,21 +214,24 @@ async function processPublication(
 
     await syncPublicationAuthors(created.id, institutionId, pub.authors);
 
-    await prisma.changeEvent.create({
-      data: {
-        institutionId,
-        publicationId: created.id,
-        changeType: ChangeType.NEW_PUBLICATION,
-        severity: "info",
-        summaryAr: `بحث جديد: ${pub.title}`,
-        summaryEn: `New publication: ${pub.title}`,
-        payload: {
-          eid: pub.eid,
-          doi: pub.doi,
-          citations: pub.citationCount ?? 0,
+    // Only emit "new publication" alerts after the baseline archive exists.
+    if (!baseline) {
+      await prisma.changeEvent.create({
+        data: {
+          institutionId,
+          publicationId: created.id,
+          changeType: ChangeType.NEW_PUBLICATION,
+          severity: "info",
+          summaryAr: `بحث جديد: ${pub.title}`,
+          summaryEn: `New publication: ${pub.title}`,
+          payload: {
+            eid: pub.eid,
+            doi: pub.doi,
+            citations: pub.citationCount ?? 0,
+          },
         },
-      },
-    });
+      });
+    }
 
     counters.newCount += 1;
     return;
@@ -432,7 +446,9 @@ export async function runMonitoringScan(options?: {
     totalFetched = publications.length;
 
     for (const pub of publications) {
-      await processPublication(institution.id, pub, counters);
+      await processPublication(institution.id, pub, counters, {
+        baseline: isBaseline,
+      });
       const existing = await findExistingPublication(institution.id, pub);
       if (existing) seenIds.add(existing.id);
     }
