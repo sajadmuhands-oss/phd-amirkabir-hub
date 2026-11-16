@@ -245,8 +245,8 @@ async function processPublication(
   await prisma.publication.update({
     where: { id: existing.id },
     data: {
-      eid: pub.eid || existing.eid,
-      doi: pub.doi || existing.doi,
+      eid: eid || existing.eid,
+      doi: doi || existing.doi,
       title: pub.title,
       publicationType: pub.publicationType || existing.publicationType,
       journalName: pub.journalName || existing.journalName,

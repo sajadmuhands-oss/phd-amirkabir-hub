@@ -1,23 +1,26 @@
-import {
-  endOfDay,
-  endOfMonth,
-  endOfWeek,
-  startOfDay,
-  startOfMonth,
-  startOfWeek,
-  startOfYear,
-} from "date-fns";
-import { toZonedTime } from "date-fns-tz";
 import { prisma } from "@/lib/prisma";
-
-const TIMEZONE = "Asia/Baghdad";
+import {
+  getDailyPeriod,
+  getMonthlyPeriod,
+  getWeeklyPeriod,
+} from "@/lib/reports/periods";
 
 export async function getDashboardData() {
-  const now = toZonedTime(new Date(), TIMEZONE);
   const institution = await prisma.institution.findFirst({
     orderBy: { createdAt: "asc" },
   });
   if (!institution) return null;
+
+  const now = new Date();
+  const currentYear = Number(
+    new Intl.DateTimeFormat("en", {
+      timeZone: "Asia/Baghdad",
+      year: "numeric",
+    }).format(now)
+  );
+  const daily = getDailyPeriod(now);
+  const weekly = getWeeklyPeriod(now);
+  const monthly = getMonthlyPeriod(now);
 
   const [
     totalPublications,
@@ -34,6 +37,7 @@ export async function getDashboardData() {
     topAuthors,
     recentChanges,
     recentPublications,
+    citationSum,
   ] = await Promise.all([
     prisma.publication.count({
       where: { institutionId: institution.id, isActive: true },
@@ -42,31 +46,30 @@ export async function getDashboardData() {
       where: {
         institutionId: institution.id,
         isActive: true,
-        publishedYear: now.getFullYear(),
+        publishedYear: currentYear,
       },
     }),
     prisma.publication.count({
       where: {
         institutionId: institution.id,
-        firstSeenAt: { gte: startOfDay(now), lte: endOfDay(now) },
+        firstSeenAt: { gte: daily.start, lte: daily.end },
       },
     }),
     prisma.publication.count({
       where: {
         institutionId: institution.id,
-        firstSeenAt: {
-          gte: startOfWeek(now, { weekStartsOn: 6 }),
-          lte: endOfWeek(now, { weekStartsOn: 6 }),
-        },
+        firstSeenAt: { gte: weekly.start, lte: weekly.end },
       },
     }),
     prisma.publication.count({
       where: {
         institutionId: institution.id,
-        firstSeenAt: { gte: startOfMonth(now), lte: endOfMonth(now) },
+        firstSeenAt: { gte: monthly.start, lte: monthly.end },
       },
     }),
-    prisma.author.count({ where: { institutionId: institution.id } }),
+    prisma.author.count({
+      where: { institutionId: institution.id, publicationCount: { gt: 0 } },
+    }),
     prisma.metricSnapshot.findFirst({
       where: { institutionId: institution.id },
       orderBy: { capturedAt: "desc" },
@@ -108,7 +111,7 @@ export async function getDashboardData() {
       take: 8,
     }),
     prisma.author.findMany({
-      where: { institutionId: institution.id },
+      where: { institutionId: institution.id, publicationCount: { gt: 0 } },
       orderBy: { publicationCount: "desc" },
       take: 8,
     }),
@@ -121,7 +124,7 @@ export async function getDashboardData() {
     prisma.publication.findMany({
       where: {
         institutionId: institution.id,
-        firstSeenAt: { gte: startOfYear(now) },
+        isActive: true,
       },
       orderBy: { firstSeenAt: "desc" },
       take: 8,
@@ -129,12 +132,11 @@ export async function getDashboardData() {
         authors: { include: { author: true }, orderBy: { authorOrder: "asc" } },
       },
     }),
+    prisma.publication.aggregate({
+      where: { institutionId: institution.id, isActive: true },
+      _sum: { citationCount: true },
+    }),
   ]);
-
-  const citationSum = await prisma.publication.aggregate({
-    where: { institutionId: institution.id, isActive: true },
-    _sum: { citationCount: true },
-  });
 
   return {
     institution,
@@ -145,7 +147,8 @@ export async function getDashboardData() {
       weekPublications,
       monthPublications,
       authorCount,
-      citationCount: latestMetrics?.citationCount ?? citationSum._sum.citationCount ?? 0,
+      citationCount:
+        latestMetrics?.citationCount ?? citationSum._sum.citationCount ?? 0,
       hIndex: latestMetrics?.hIndex ?? null,
     },
     lastScan,

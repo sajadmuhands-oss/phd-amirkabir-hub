@@ -13,7 +13,7 @@
 - مفتاح Elsevier Scopus API
 - (اختياري) Meta WhatsApp Business Cloud API
 
-> في بيئة التطوير الحالية قد لا يتوفر Docker؛ الكود كامل وجاهز، وشغّل `docker compose up -d` على جهازك المحلي.
+> إن لم يتوفر Docker في بيئتك، شغّل `docker compose up -d` على جهازك المحلي ثم أكمل الخطوات التالية. الكود كامل وجاهز.
 
 ## التشغيل السريع
 
@@ -26,16 +26,16 @@ docker compose up -d
 
 # 2) تثبيت وتهيئة
 npm install
-npm run setup          # prisma generate + db push/migrate + seed
+npm run setup          # prisma generate + db push + seed
 
 # 3) التطبيق
-npm run dev            # http://localhost:3000 → يحوّل إلى /ar
+npm run dev            # http://localhost:3000
 
-# 4) الجدولة (فحص كل دقيقة + تقارير)
+# 4) الجدولة (فحص كل دقيقة + تقارير يومية/أسبوعية/شهرية)
 npm run worker
 ```
 
-أو تطبيق الهجرات صراحةً:
+أو تطبيق الهجرات:
 
 ```bash
 npx prisma migrate deploy
@@ -53,7 +53,7 @@ npm run db:seed
 
 ## أرقام واتساب للطوارئ (متعددة)
 
-1. من الواجهة: **الإعدادات → واتساب والتنبيهات → أرقام واتساب للطوارئ والتقارير**
+1. من الواجهة: **الإعدادات → أرقام واتساب للطوارئ والتقارير**
 2. أو في `.env`:
 
 ```env
@@ -62,7 +62,7 @@ WHATSAPP_PHONE_NUMBER_ID=...
 WHATSAPP_RECIPIENTS=9647xxxxxxxx,9647yyyyyyyy
 ```
 
-الأرقام بصيغة دولية **بدون +** ومفصولة بفاصلة. تُستخدم للتنبيهات الاضطرارية (نشاط مريب) وللتقارير اليومية/الأسبوعية/الشهرية.
+الأرقام بصيغة دولية **بدون +** ومفصولة بفاصلة. تُستخدم للتنبيهات الاضطرارية (نشاط مريب) وللتقارير المجدولة.
 
 عتبات التنبيه قابلة للضبط من الإعدادات (`alerts.*`).
 
@@ -74,14 +74,16 @@ WHATSAPP_RECIPIENTS=9647xxxxxxxx,9647yyyyyyyy
 - تقارير واتساب يومية/أسبوعية/شهرية + PDF للأسبوعي والشهري
 - مصادر قابلة للتوسع (`SourceAdapter`) — Scopus مفعّل، الباقي stubs
 - مصادقة NextAuth (Credentials) + bcrypt
+- واجهة عربية RTL مع تبديل اختياري إلى الإنجليزية
 
 ## هيكل مهم
 
 ```
 research-track/
   prisma/                 # schema + migrations + seed
-  src/app/[locale]/...    # لوحة عربية RTL (+ en)
-  src/app/api/            # auth, monitor, settings, reports, whatsapp
+  src/app/(dashboard)/    # لوحة التحكم
+  src/app/login/          # تسجيل الدخول
+  src/app/api/            # auth, scan, settings, reports, whatsapp
   src/lib/scopus/         # عميل Elsevier الرسمي
   src/lib/monitoring/     # محرك الفحص والتنبيهات
   src/lib/reports/        # بناء التقارير + PDF
