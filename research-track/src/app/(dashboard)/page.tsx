@@ -1,6 +1,10 @@
 import { getTranslations } from "next-intl/server";
 import { TypeChart, YearChart } from "@/components/charts";
 import { StatCard } from "@/components/stat-card";
+import {
+  ensureBootstrapped,
+  ensureScopusDataLoaded,
+} from "@/lib/bootstrap";
 import { getDashboardData } from "@/lib/dashboard";
 
 export const dynamic = "force-dynamic";
@@ -8,14 +12,33 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
   const t = await getTranslations("dashboard");
   const tApp = await getTranslations("app");
+
+  await ensureBootstrapped();
+  // Full Scopus baseline can take minutes — start in background, never block SSR.
+  void ensureScopusDataLoaded().catch(() => undefined);
+
   const data = await getDashboardData();
+  const importing =
+    Boolean(process.env.SCOPUS_API_KEY?.trim()) &&
+    (!data || data.kpis.totalPublications === 0);
 
   if (!data) {
-    return <p className="surface rounded-2xl p-6">{t("noData")}</p>;
+    return (
+      <p className="surface rounded-2xl p-6">
+        {importing
+          ? "جاري سحب بيانات Scopus الحقيقية لأول مرة…"
+          : t("noData")}
+      </p>
+    );
   }
 
   return (
     <div className="space-y-6">
+      {importing ? (
+        <p className="rounded-2xl border border-[var(--aui-gold)]/40 bg-[var(--aui-gold)]/10 px-4 py-3 text-sm text-[var(--aui-navy)]">
+          جاري سحب بيانات Scopus الحقيقية لأول مرة — حدّث الصفحة بعد دقائق.
+        </p>
+      ) : null}
       <header className="surface overflow-hidden rounded-3xl">
         <div className="relative bg-[linear-gradient(120deg,#002147_0%,#0D4377_55%,#1b5f95_100%)] px-6 py-8 text-white md:px-8">
           <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_20%_20%,white_0,transparent_35%),radial-gradient(circle_at_80%_0%,#c4a35a_0,transparent_25%)]" />
