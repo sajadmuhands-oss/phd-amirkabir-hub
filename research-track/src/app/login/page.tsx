@@ -15,9 +15,9 @@ type Status = {
 
 function adminMissingMessage(status: Status | null): string {
   if (status?.hasAdminPasswordEnv) {
-    return "تعذر إنشاء حساب المدير رغم وجود ADMIN_PASSWORD. تحقق من اتصال قاعدة البيانات ثم أعد المحاولة، أو شغّل npm run db:seed محلياً.";
+    return "تعذر إنشاء حساب المدير رغم وجود ADMIN_PASSWORD. تحقق من اتصال قاعدة البيانات (DATABASE_URL) ثم أعد تحميل الصفحة، أو شغّل npm run db:seed / npm run db:ensure-admin محلياً.";
   }
-  return "لم يُنشأ حساب المدير بعد. عيّن ADMIN_EMAIL وADMIN_PASSWORD (8 أحرف على الأقل) في ملف .env المحلي، أو احفظهما في أسرار Cursor للنسخة المستضافة، ثم أعد تشغيل التطبيق.";
+  return "لم يُنشأ حساب المدير بعد. عيّن ADMIN_EMAIL وADMIN_PASSWORD (8 أحرف على الأقل) في ملف .env ثم أعد تشغيل التطبيق. للنسخة المستضافة اربط نفس المتغيرين كأسرار التطبيق ثم أعد النشر.";
 }
 
 function LoginForm() {

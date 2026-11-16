@@ -105,7 +105,16 @@ export async function ensureFirstAdminFromEnv() {
   }
 }
 
+function logAdminEnvPresence() {
+  const emailSet = Boolean(process.env.ADMIN_EMAIL?.trim());
+  const passwordLen = (process.env.ADMIN_PASSWORD?.trim() || "").length;
+  console.info(
+    `[bootstrap] ADMIN_EMAIL set=${emailSet}; ADMIN_PASSWORD set=${passwordLen >= 8} (len=${passwordLen >= 8 ? ">=8" : passwordLen})`
+  );
+}
+
 async function bootstrap() {
+  logAdminEnvPresence();
   await ensureFirstAdminFromEnv();
 
   await prisma.institution.upsert({

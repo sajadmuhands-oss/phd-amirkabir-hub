@@ -51,18 +51,17 @@ export const authOptions: NextAuthOptions = {
           .toLowerCase()
           .trim();
 
-        let user = await prisma.user.findUnique({ where: { email } });
-
-        // Retry env admin upsert on login so a missed first-boot still recovers
-        // from ADMIN_EMAIL / ADMIN_PASSWORD without requiring Cursor-only secrets.
-        if (!user && email === envEmail) {
+        // Always upsert/sync designated admin from ADMIN_* (.env or hosted
+        // secrets) on login — recovers missed boots and rotates password.
+        if (email === envEmail) {
           try {
             await ensureFirstAdminFromEnv();
           } catch {
             return null;
           }
-          user = await prisma.user.findUnique({ where: { email: envEmail } });
         }
+
+        const user = await prisma.user.findUnique({ where: { email } });
         if (!user) return null;
 
         const valid = await bcrypt.compare(
