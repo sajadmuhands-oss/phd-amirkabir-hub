@@ -1,20 +1,23 @@
 import { NextResponse } from "next/server";
 import { hasAuthSecret } from "@/lib/auth-secret";
-import { ensureBootstrapped } from "@/lib/bootstrap";
+import {
+  ensureBootstrapped,
+  isAdminPasswordConfigured,
+} from "@/lib/bootstrap";
 import { prisma } from "@/lib/prisma";
 
-/** Public readiness flags only — no secret values. */
+/** Public readiness flags only — no secret values or raw exception text. */
 export async function GET() {
   let bootError: string | null = null;
   try {
     await ensureBootstrapped();
-  } catch (err) {
-    bootError = err instanceof Error ? err.message : "bootstrap-failed";
+  } catch {
+    bootError = "bootstrap-failed";
   }
 
   let hasAdmin = false;
   try {
-    hasAdmin = (await prisma.user.count()) > 0;
+    hasAdmin = (await prisma.user.count({ where: { role: "admin" } })) > 0;
   } catch {
     bootError = bootError || "database-unavailable";
   }
@@ -23,6 +26,7 @@ export async function GET() {
     ok: true,
     authConfigured: hasAuthSecret(),
     hasAdmin,
+    adminPasswordConfigured: isAdminPasswordConfigured(),
     hasScopusKey: Boolean(process.env.SCOPUS_API_KEY?.trim()),
     bootError,
   });

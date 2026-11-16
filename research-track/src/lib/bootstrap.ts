@@ -8,21 +8,33 @@ const AFFILIATION_URL =
   process.env.SCOPUS_AFFILIATION_URL ||
   "https://www.scopus.com/pages/organization/60118739?origin=AffiliationNamesList";
 
-let bootPromise: Promise<void> | null = null;
+let infraPromise: Promise<void> | null = null;
 let scanPromise: Promise<void> | null = null;
+let adminPromise: Promise<void> | null = null;
+
+/** True when ADMIN_PASSWORD is present and long enough to provision the admin. */
+export function isAdminPasswordConfigured() {
+  return (process.env.ADMIN_PASSWORD?.trim() || "").length >= 8;
+}
 
 /**
- * Ensure hosted/local DB has institution, sources, and (out-of-band) first admin.
- * Safe to call on every request (runs once per process).
+ * Ensure hosted/local DB has institution, sources, and first admin from env.
+ * Infra bootstraps once per process; admin provisioning retries while no admin exists
+ * (so a late-bound ADMIN_PASSWORD can still create the account).
  */
-export function ensureBootstrapped() {
-  if (!bootPromise) {
-    bootPromise = bootstrap().catch((err) => {
-      bootPromise = null;
+export async function ensureBootstrapped() {
+  await ensureInfraBootstrapped();
+  await ensureAdminFromEnv();
+}
+
+function ensureInfraBootstrapped() {
+  if (!infraPromise) {
+    infraPromise = bootstrapInfra().catch((err) => {
+      infraPromise = null;
       throw err;
     });
   }
-  return bootPromise;
+  return infraPromise;
 }
 
 /**
@@ -31,6 +43,24 @@ export function ensureBootstrapped() {
  * in sync with ADMIN_PASSWORD (owner-controlled secret only — not a public API).
  * Other users are never touched.
  */
+export function ensureAdminFromEnv() {
+  if (!adminPromise) {
+    adminPromise = ensureFirstAdminFromEnv()
+      .catch((err) => {
+        adminPromise = null;
+        throw err;
+      })
+      .then(async () => {
+        const count = await prisma.user.count().catch(() => 0);
+        if (count === 0) {
+          // Secret may still be missing; allow a later request to retry.
+          adminPromise = null;
+        }
+      });
+  }
+  return adminPromise;
+}
+
 async function ensureFirstAdminFromEnv() {
   const adminPassword = process.env.ADMIN_PASSWORD?.trim() || "";
   if (adminPassword.length < 8) {
@@ -69,8 +99,12 @@ async function ensureFirstAdminFromEnv() {
   try {
     await prisma.$transaction(
       async (tx) => {
-        const existing = await tx.user.count();
-        if (existing > 0) return;
+        const already = await tx.user.findUnique({ where: { email } });
+        if (already) return;
+
+        const adminCount = await tx.user.count({ where: { role: "admin" } });
+        if (adminCount > 0) return;
+
         await tx.user.create({
           data: {
             email,
@@ -83,18 +117,15 @@ async function ensureFirstAdminFromEnv() {
       { isolationLevel: "Serializable" }
     );
   } catch (err) {
-    // Concurrent bootstrap or unique conflict — admin may already exist.
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) return;
-    const count = await prisma.user.count();
-    if (count > 0) return;
+    const adminCount = await prisma.user.count({ where: { role: "admin" } });
+    if (adminCount > 0) return;
     throw err;
   }
 }
 
-async function bootstrap() {
-  await ensureFirstAdminFromEnv();
-
+async function bootstrapInfra() {
   await prisma.institution.upsert({
     where: { id: "auiq-main" },
     update: {
