@@ -9,14 +9,13 @@ import { consumeRateLimit } from "@/lib/rate-limit";
 
 ensureAuthEnv();
 
-function authSecretOrThrow() {
-  if (!hasAuthSecret()) {
-    throw new Error(
-      "NEXTAUTH_SECRET is required. Set a unique secret before starting the app."
-    );
+function ensureProcessSecret() {
+  if (!process.env.NEXTAUTH_SECRET?.trim() && hasAuthSecret()) {
+    process.env.NEXTAUTH_SECRET = resolveAuthSecret();
   }
-  return resolveAuthSecret();
 }
+
+ensureProcessSecret();
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
@@ -32,6 +31,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!hasAuthSecret()) return null;
+        ensureProcessSecret();
         if (!credentials?.email || !credentials.password) return null;
 
         const email = credentials.email.toLowerCase().trim();
@@ -79,6 +79,5 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  // Evaluated when NextAuth initializes; missing env fails closed.
-  secret: hasAuthSecret() ? authSecretOrThrow() : undefined,
+  secret: hasAuthSecret() ? resolveAuthSecret() : undefined,
 };
