@@ -1,4 +1,3 @@
-import { randomBytes } from "crypto";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -41,16 +40,11 @@ const DEFAULT_SETTINGS: Array<{ key: string; value: string; isSecret?: boolean }
   { key: "timezone", value: "Asia/Baghdad" },
 ];
 
-function resolveAdminPassword() {
+function requireAdminPassword() {
   const fromEnv = process.env.ADMIN_PASSWORD?.trim() || "";
   if (fromEnv.length >= 12) return fromEnv;
-
-  if (process.env.ALLOW_GENERATED_ADMIN_PASSWORD === "true") {
-    return randomBytes(18).toString("base64url");
-  }
-
   throw new Error(
-    "ADMIN_PASSWORD is required (min 12 characters). Set it in the environment before seeding."
+    "ADMIN_PASSWORD is required (min 12 characters). Set it in the environment before seeding. Random generation is disabled."
   );
 }
 
@@ -59,27 +53,20 @@ async function main() {
   const name = process.env.ADMIN_NAME || "مدير النظام";
   const existingAdmin = await prisma.user.findUnique({ where: { email } });
 
-  // Only set/rotate password when ADMIN_PASSWORD is explicitly provided,
-  // or when creating the first admin (then require env / generated).
-  let password: string | null = null;
+  // Create or rotate admin only with an explicit ADMIN_PASSWORD — never invent one.
   if (process.env.ADMIN_PASSWORD?.trim()) {
-    password = resolveAdminPassword();
-  } else if (!existingAdmin) {
-    password = resolveAdminPassword();
-  }
-
-  if (password) {
+    const password = requireAdminPassword();
     const passwordHash = await bcrypt.hash(password, 12);
     await prisma.user.upsert({
       where: { email },
       update: { name, passwordHash, role: "admin" },
       create: { email, name, passwordHash, role: "admin" },
     });
-    if (!process.env.ADMIN_PASSWORD?.trim()) {
-      console.log("Generated one-time ADMIN_PASSWORD (store securely, not in git):");
-      console.log(password);
-    }
-  } else if (existingAdmin) {
+  } else if (!existingAdmin) {
+    throw new Error(
+      "ADMIN_PASSWORD is required (min 12 characters) to create the first admin."
+    );
+  } else {
     await prisma.user.update({
       where: { email },
       data: { name, role: "admin" },

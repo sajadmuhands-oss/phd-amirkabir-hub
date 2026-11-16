@@ -2,12 +2,21 @@ import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { ensureAuthEnv } from "@/lib/auth-env";
-import { resolveAuthSecret } from "@/lib/auth-secret";
+import { hasAuthSecret, resolveAuthSecret } from "@/lib/auth-secret";
 import { ensureBootstrapped } from "@/lib/bootstrap";
 import { prisma } from "@/lib/prisma";
 import { consumeRateLimit } from "@/lib/rate-limit";
 
 ensureAuthEnv();
+
+function authSecretOrThrow() {
+  if (!hasAuthSecret()) {
+    throw new Error(
+      "NEXTAUTH_SECRET is required. Set a unique secret before starting the app."
+    );
+  }
+  return resolveAuthSecret();
+}
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
@@ -22,6 +31,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        if (!hasAuthSecret()) return null;
         if (!credentials?.email || !credentials.password) return null;
 
         const email = credentials.email.toLowerCase().trim();
@@ -69,5 +79,6 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  secret: resolveAuthSecret(),
+  // Evaluated when NextAuth initializes; missing env fails closed.
+  secret: hasAuthSecret() ? authSecretOrThrow() : undefined,
 };

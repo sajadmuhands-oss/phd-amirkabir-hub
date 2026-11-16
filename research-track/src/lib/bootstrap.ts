@@ -1,4 +1,3 @@
-import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { runMonitoringScan } from "@/lib/monitoring/engine";
@@ -34,19 +33,22 @@ async function bootstrap() {
   const adminPassword = process.env.ADMIN_PASSWORD?.trim() || "";
 
   const existingAdmin = await prisma.user.findUnique({ where: { email } });
+  // Never invent or silently randomize admin credentials.
   if (!existingAdmin) {
-    const password =
-      adminPassword.length >= 12
-        ? adminPassword
-        : randomBytes(18).toString("base64url");
-    await prisma.user.create({
-      data: {
-        email,
-        name,
-        role: "admin",
-        passwordHash: await bcrypt.hash(password, 12),
-      },
-    });
+    if (adminPassword.length < 12) {
+      console.error(
+        "ADMIN_PASSWORD (min 12 characters) is required to create the first admin; skipping user bootstrap."
+      );
+    } else {
+      await prisma.user.create({
+        data: {
+          email,
+          name,
+          role: "admin",
+          passwordHash: await bcrypt.hash(adminPassword, 12),
+        },
+      });
+    }
   } else if (adminPassword.length >= 12) {
     await prisma.user.update({
       where: { email },
