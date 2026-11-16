@@ -6,17 +6,21 @@ import { resolveAuthSecretEdge } from "@/lib/auth-secret";
 
 ensureAuthEnv();
 
-function authRequired() {
-  const value = process.env.AUTH_REQUIRED?.trim().toLowerCase();
-  return value === "1" || value === "true" || value === "yes";
-}
-
 export async function middleware(req: NextRequest) {
-  // Default: open access — no login wall.
-  if (!authRequired()) {
+  const { pathname } = req.nextUrl;
+
+  // Public read-only research pages — no login required.
+  const isPublicRead =
+    pathname === "/" ||
+    pathname.startsWith("/publications") ||
+    pathname.startsWith("/changes") ||
+    pathname.startsWith("/reports");
+
+  if (isPublicRead) {
     return NextResponse.next();
   }
 
+  // Admin-only pages (settings) require a real session.
   const secret = await resolveAuthSecretEdge();
   if (!secret) {
     const login = new URL("/login", req.url);
@@ -24,15 +28,14 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(login);
   }
 
-  // Ensure Edge JWT verification uses the same secret as Node auth.
   if (!process.env.NEXTAUTH_SECRET?.trim()) {
     process.env.NEXTAUTH_SECRET = secret;
   }
 
   const token = await getToken({ req, secret });
-  if (!token) {
+  if (!token || token.role !== "admin") {
     const login = new URL("/login", req.url);
-    login.searchParams.set("callbackUrl", req.nextUrl.pathname);
+    login.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(login);
   }
 

@@ -11,6 +11,18 @@ const SECRET_KEYS = new Set([
   "whatsapp.token",
 ]);
 
+const ALLOWED_SETTING_KEYS = new Set([
+  "scopus.apiKey",
+  "scopus.instToken",
+  "scopus.affiliationId",
+  "scopus.affiliationUrl",
+  "whatsapp.token",
+  "whatsapp.phoneNumberId",
+  "whatsapp.recipients",
+  "monitor.intervalMinutes",
+  "timezone",
+]);
+
 export async function GET() {
   const { error } = await requireAdminSession();
   if (error) return error;
@@ -50,6 +62,7 @@ export async function PUT(request: Request) {
   const entries: Array<{ key: string; value: string; isSecret?: boolean }> = [];
 
   for (const [key, rawValue] of Object.entries(updates)) {
+    if (!ALLOWED_SETTING_KEYS.has(key)) continue;
     if (typeof rawValue !== "string") continue;
     if (SECRET_KEYS.has(key) && (/^•/.test(rawValue) || rawValue.includes("•"))) {
       continue;
