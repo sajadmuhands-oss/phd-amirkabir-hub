@@ -1,6 +1,9 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { runMonitoringScan } from "@/lib/monitoring/engine";
+import {
+  clearStaleRunningScans,
+  runMonitoringScan,
+} from "@/lib/monitoring/engine";
 import { setSetting } from "@/lib/settings";
 
 const AFFILIATION_ID = process.env.SCOPUS_AFFILIATION_ID || "60118739";
@@ -188,6 +191,8 @@ export function ensureScopusDataLoaded() {
 
 async function loadScopusIfEmpty() {
   await ensureBootstrapped();
+  await clearStaleRunningScans();
+
   const apiKey =
     process.env.SCOPUS_API_KEY?.trim() ||
     (
@@ -202,5 +207,6 @@ async function loadScopusIfEmpty() {
   await runMonitoringScan({
     sourceCode: "scopus",
     triggeredBy: "bootstrap",
+    fullReconcile: true,
   });
 }
