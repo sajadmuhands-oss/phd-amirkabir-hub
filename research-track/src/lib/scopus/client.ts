@@ -131,6 +131,27 @@ export class ScopusClient {
     }
 
     const pageSize = 25;
+    const pageDelayMs = 250;
+    const fields = [
+      "eid",
+      "dc:title",
+      "prism:doi",
+      "prism:coverDate",
+      "prism:publicationName",
+      "prism:aggregationType",
+      "prism:issn",
+      "prism:volume",
+      "prism:issueIdentifier",
+      "prism:pageRange",
+      "subtypeDescription",
+      "citedby-count",
+      "openaccess",
+      "openaccessFlag",
+      "dc:creator",
+      "author",
+      "link",
+    ].join(",");
+
     let start = 0;
     let total = Infinity;
     const all: SourcePublication[] = [];
@@ -139,7 +160,10 @@ export class ScopusClient {
       let query = `AF-ID(${config.affiliationId})`;
       if (options?.startYear) query += ` AND PUBYEAR > ${options.startYear - 1}`;
 
-      const url = `${SEARCH_URL}?query=${encodeURIComponent(query)}&count=${pageSize}&start=${start}&sort=coverDate`;
+      const url =
+        `${SEARCH_URL}?query=${encodeURIComponent(query)}` +
+        `&count=${pageSize}&start=${start}&sort=coverDate` +
+        `&field=${encodeURIComponent(fields)}`;
       const data = await scopusFetch(url, config.apiKey, config.instToken);
       const results = data["search-results"] as Record<string, unknown>;
       total = Number(results?.["opensearch:totalResults"] || 0);
@@ -155,6 +179,9 @@ export class ScopusClient {
 
       start += pageSize;
       if (entries.length < pageSize) break;
+      if (start < total) {
+        await new Promise((resolve) => setTimeout(resolve, pageDelayMs));
+      }
     }
 
     return all;

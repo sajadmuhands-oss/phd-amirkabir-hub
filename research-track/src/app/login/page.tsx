@@ -53,8 +53,8 @@ export default function LoginPage() {
               type="email"
               required
               className="w-full rounded-xl border border-[var(--aui-line)] bg-white px-3 py-2.5 outline-none focus:border-[var(--aui-sapphire)]"
-              defaultValue="admin@alayen.edu.iq"
               autoComplete="username"
+              placeholder="admin@alayen.edu.iq"
             />
           </div>
           <div>

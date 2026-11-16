@@ -345,9 +345,35 @@ function computeLocalHIndex(citationCounts: number[]) {
   return h;
 }
 
+async function consecutiveFailStreak(
+  institutionId: string,
+  sourceCode: string,
+  excludeId?: string
+) {
+  const recent = await prisma.scanRun.findMany({
+    where: {
+      institutionId,
+      sourceCode,
+      ...(excludeId ? { id: { not: excludeId } } : {}),
+    },
+    orderBy: { startedAt: "desc" },
+    take: 20,
+    select: { status: true },
+  });
+
+  let streak = 0;
+  for (const run of recent) {
+    if (run.status === ScanStatus.FAILED) streak += 1;
+    else break;
+  }
+  return streak;
+}
+
 export async function runMonitoringScan(options?: {
   triggeredBy?: string;
   sourceCode?: string;
+  /** Force full AF-ID pull + removal reconcile (default for baseline/manual). */
+  fullReconcile?: boolean;
 }): Promise<MonitorResult> {
   const sourceCode = options?.sourceCode || "scopus";
   const triggeredBy = options?.triggeredBy || "scheduler";
@@ -359,16 +385,29 @@ export async function runMonitoringScan(options?: {
     orderBy: { capturedAt: "desc" },
   });
 
-  const recentFails = await prisma.scanRun.count({
+  const priorSuccess = await prisma.scanRun.findFirst({
     where: {
       institutionId: institution.id,
       sourceCode,
-      status: ScanStatus.FAILED,
-      startedAt: {
-        gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      },
+      status: ScanStatus.SUCCESS,
     },
+    orderBy: { startedAt: "desc" },
   });
+  const isBaseline = !priorSuccess;
+  const fullReconcile =
+    options?.fullReconcile === true ||
+    isBaseline ||
+    triggeredBy === "manual" ||
+    triggeredBy === "reconcile";
+
+  const baghdadYear = Number(
+    new Intl.DateTimeFormat("en", {
+      timeZone: "Asia/Baghdad",
+      year: "numeric",
+    }).format(new Date())
+  );
+  // Frequent scheduler jobs stay incremental to protect Elsevier quotas.
+  const startYear = fullReconcile ? undefined : Math.max(2000, baghdadYear - 1);
 
   const scanRun = await prisma.scanRun.create({
     data: {
@@ -385,6 +424,7 @@ export async function runMonitoringScan(options?: {
 
   try {
     const publications = await adapter.fetchPublications({
+      startYear,
       onPage: async () => {
         // progress hook reserved for future UI streaming
       },
@@ -403,7 +443,10 @@ export async function runMonitoringScan(options?: {
       if (existing) seenIds.add(existing.id);
     }
 
-    const removedCount = await markMissingAsRemoved(institution.id, seenIds);
+    // Only mark removals on full reconcile — incremental windows would false-delete.
+    const removedCount = fullReconcile
+      ? await markMissingAsRemoved(institution.id, seenIds)
+      : 0;
     await refreshAuthorCounts(institution.id);
 
     const activePubs = await prisma.publication.findMany({
@@ -469,15 +512,10 @@ export async function runMonitoringScan(options?: {
       });
     }
 
-    const status =
-      counters.newCount + counters.updatedCount + removedCount > 0
-        ? ScanStatus.SUCCESS
-        : ScanStatus.SUCCESS;
-
     const finished = await prisma.scanRun.update({
       where: { id: scanRun.id },
       data: {
-        status,
+        status: ScanStatus.SUCCESS,
         finishedAt: new Date(),
         newCount: counters.newCount,
         updatedCount: counters.updatedCount,
@@ -493,6 +531,7 @@ export async function runMonitoringScan(options?: {
       removedCount,
       previousCitations: previousSnapshot?.citationCount ?? null,
       currentCitations: apiMetrics?.citationCount || citationCount,
+      baselineScan: isBaseline,
     });
 
     await prisma.auditLog.create({
@@ -506,6 +545,9 @@ export async function runMonitoringScan(options?: {
           removedCount,
           totalFetched,
           triggeredBy,
+          fullReconcile,
+          baselineScan: isBaseline,
+          startYear: startYear ?? null,
         },
       },
     });
@@ -534,20 +576,29 @@ export async function runMonitoringScan(options?: {
       },
     });
 
+    const failStreak =
+      (await consecutiveFailStreak(institution.id, sourceCode, finished.id)) + 1;
+
     await evaluateSuspiciousActivity({
       institutionId: institution.id,
       newCount: counters.newCount,
       updatedCount: counters.updatedCount,
       removedCount: 0,
       scanFailed: true,
-      failStreak: recentFails + 1,
+      failStreak,
+      baselineScan: isBaseline,
     });
 
     await prisma.auditLog.create({
       data: {
         action: "monitor.scan.failed",
         level: "error",
-        details: { scanRunId: finished.id, error: message, triggeredBy },
+        details: {
+          scanRunId: finished.id,
+          error: message,
+          triggeredBy,
+          failStreak,
+        },
       },
     });
 

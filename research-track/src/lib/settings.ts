@@ -106,7 +106,7 @@ export async function getReportScheduleConfig() {
       Number(
         settings["monitor.intervalMinutes"] ||
           process.env.MONITOR_INTERVAL_MINUTES ||
-          1
+          15
       )
     ),
     daily: {

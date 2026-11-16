@@ -35,8 +35,13 @@ export default async function ReportsPage() {
               {report.contentText}
             </pre>
             {report.pdfPath ? (
-              <p className="mt-3 text-xs text-[var(--aui-sapphire)]">
-                {t("pdf")}: {report.pdfPath}
+              <p className="mt-3 text-xs">
+                <a
+                  href={`/api/reports/${report.id}/pdf`}
+                  className="text-[var(--aui-sapphire)] underline-offset-2 hover:underline"
+                >
+                  {t("pdf")}
+                </a>
               </p>
             ) : null}
           </article>

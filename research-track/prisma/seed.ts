@@ -29,7 +29,8 @@ const DEFAULT_SETTINGS: Array<{ key: string; value: string; isSecret?: boolean }
   { key: "reports.monthly.time", value: "21:00" },
   {
     key: "monitor.intervalMinutes",
-    value: process.env.MONITOR_INTERVAL_MINUTES || "1",
+    // Default 15 minutes to stay within Elsevier API quotas; override via env/UI.
+    value: process.env.MONITOR_INTERVAL_MINUTES || "15",
   },
   { key: "alerts.enabled", value: "true" },
   { key: "alerts.newPubsThreshold", value: "5" },
@@ -85,6 +86,34 @@ async function main() {
   }
 
   for (const setting of DEFAULT_SETTINGS) {
+    const existing = await prisma.systemSetting.findUnique({
+      where: { key: setting.key },
+    });
+
+    // Never wipe UI-saved secrets when env/seed values are empty.
+    if (
+      existing &&
+      setting.isSecret &&
+      existing.value &&
+      !setting.value.trim()
+    ) {
+      continue;
+    }
+
+    // Migrate legacy 1-minute default to the safer 15-minute default.
+    if (
+      existing &&
+      setting.key === "monitor.intervalMinutes" &&
+      existing.value === "1" &&
+      !process.env.MONITOR_INTERVAL_MINUTES
+    ) {
+      await prisma.systemSetting.update({
+        where: { key: setting.key },
+        data: { value: "15", isSecret: false },
+      });
+      continue;
+    }
+
     await prisma.systemSetting.upsert({
       where: { key: setting.key },
       update: { value: setting.value, isSecret: setting.isSecret ?? false },
