@@ -1,19 +1,17 @@
 /**
- * NextAuth middleware (Edge) and the Node auth route must share the same secret.
- * Prefer the bound NEXTAUTH_SECRET; otherwise use a stable app fallback so the
- * hosted URL does not die with "Configuration" / Server error.
+ * NextAuth signing secret must come from the environment (bound app secret).
+ * Fail closed: never ship or invent a fallback secret.
  */
-export const FALLBACK_NEXTAUTH_SECRET =
-  "alayen-research-track-hosted-session-v1";
-
 export function resolveAuthSecret(): string {
-  const fromEnv = process.env.NEXTAUTH_SECRET?.trim();
-  return fromEnv || FALLBACK_NEXTAUTH_SECRET;
+  const fromEnv = process.env.NEXTAUTH_SECRET?.trim() || "";
+  if (!fromEnv) {
+    throw new Error(
+      "NEXTAUTH_SECRET is required. Set a unique secret before starting the app."
+    );
+  }
+  return fromEnv;
 }
 
-/** Ensure process.env is set before next-auth/middleware reads it. */
-export function ensureAuthSecretEnv() {
-  if (!process.env.NEXTAUTH_SECRET?.trim()) {
-    process.env.NEXTAUTH_SECRET = FALLBACK_NEXTAUTH_SECRET;
-  }
+export function hasAuthSecret(): boolean {
+  return Boolean(process.env.NEXTAUTH_SECRET?.trim());
 }

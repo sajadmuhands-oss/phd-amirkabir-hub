@@ -1,8 +1,5 @@
-import { ensureAuthSecretEnv } from "@/lib/auth-secret";
-
 /**
- * Hosted Cursor apps need an absolute NEXTAUTH_URL; without it NextAuth
- * returns Configuration errors and the home route looks "broken".
+ * Hosted Cursor apps need an absolute NEXTAUTH_URL when the secret is present.
  */
 export function ensureAuthEnv() {
   if (!process.env.NEXTAUTH_URL?.trim()) {
@@ -10,5 +7,4 @@ export function ensureAuthEnv() {
       process.env.APP_URL?.trim() ||
       "https://alayen-research-track.apps.grok.bot";
   }
-  ensureAuthSecretEnv();
 }

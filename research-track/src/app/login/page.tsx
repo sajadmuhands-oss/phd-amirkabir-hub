@@ -1,16 +1,18 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-export default function LoginPage() {
+function LoginForm() {
   const t = useTranslations("login");
   const tApp = useTranslations("app");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const configError = searchParams.get("error") === "Configuration";
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -45,6 +47,12 @@ export default function LoginPage() {
           <p className="mt-1 text-sm text-[var(--aui-slate)]">{tApp("system")}</p>
         </div>
 
+        {configError ? (
+          <p className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            يلزم ضبط أسرار التطبيق (جلسة الدخول) قبل استخدام النظام.
+          </p>
+        ) : null}
+
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <label className="mb-1 block text-sm text-[var(--aui-slate)]">{t("email")}</label>
@@ -78,5 +86,13 @@ export default function LoginPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}>
+      <LoginForm />
+    </Suspense>
   );
 }
