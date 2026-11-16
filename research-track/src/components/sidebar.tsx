@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
@@ -27,6 +28,16 @@ export function Sidebar() {
   const app = useTranslations("app");
   const locale = useLocale();
   const pathname = usePathname();
+  const [showLogout, setShowLogout] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/status")
+      .then((r) => r.json())
+      .then((data: { authRequired?: boolean }) => {
+        setShowLogout(data.authRequired === true);
+      })
+      .catch(() => setShowLogout(false));
+  }, []);
 
   async function switchLocale(next: "ar" | "en") {
     await fetch("/api/locale", {
@@ -98,14 +109,16 @@ export function Sidebar() {
             EN
           </button>
         </div>
-        <button
-          type="button"
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/80 transition hover:bg-white/10 md:px-4"
-        >
-          <LogOut size={18} />
-          <span className="hidden md:inline">{t("logout")}</span>
-        </button>
+        {showLogout ? (
+          <button
+            type="button"
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/80 transition hover:bg-white/10 md:px-4"
+          >
+            <LogOut size={18} />
+            <span className="hidden md:inline">{t("logout")}</span>
+          </button>
+        ) : null}
       </div>
     </aside>
   );

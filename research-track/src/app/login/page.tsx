@@ -32,9 +32,15 @@ function LoginForm() {
   useEffect(() => {
     fetch("/api/status")
       .then((r) => r.json())
-      .then((data: Status) => setStatus(data))
+      .then((data: Status & { authRequired?: boolean }) => {
+        if (data.authRequired === false) {
+          router.replace("/");
+          return;
+        }
+        setStatus(data);
+      })
       .catch(() => setStatus(null));
-  }, []);
+  }, [router]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
