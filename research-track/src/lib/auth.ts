@@ -3,7 +3,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { ensureAuthEnv } from "@/lib/auth-env";
 import { hasAuthSecret, resolveAuthSecret } from "@/lib/auth-secret";
-import { ensureBootstrapped } from "@/lib/bootstrap";
+import {
+  ensureBootstrapped,
+  ensureFirstAdminFromEnv,
+} from "@/lib/bootstrap";
 import { prisma } from "@/lib/prisma";
 import { consumeRateLimit } from "@/lib/rate-limit";
 
@@ -44,16 +47,21 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        let user = await prisma.user.findUnique({ where: { email } });
+        const envEmail = (process.env.ADMIN_EMAIL || "admin@alayen.edu.iq")
+          .toLowerCase()
+          .trim();
 
-        // If env bootstrap created the admin under ADMIN_EMAIL, allow that account only.
-        if (!user) {
-          const envEmail = (process.env.ADMIN_EMAIL || "admin@alayen.edu.iq")
-            .toLowerCase()
-            .trim();
-          if (email !== envEmail) return null;
-          user = await prisma.user.findUnique({ where: { email: envEmail } });
+        // Always upsert/sync designated admin from ADMIN_* (.env or hosted
+        // secrets) on login — recovers missed boots and rotates password.
+        if (email === envEmail) {
+          try {
+            await ensureFirstAdminFromEnv();
+          } catch {
+            return null;
+          }
         }
+
+        const user = await prisma.user.findUnique({ where: { email } });
         if (!user) return null;
 
         const valid = await bcrypt.compare(
