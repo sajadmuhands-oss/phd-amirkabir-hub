@@ -1,10 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { TypeChart, YearChart } from "@/components/charts";
 import { StatCard } from "@/components/stat-card";
-import {
-  ensureBootstrapped,
-  ensureScopusDataLoaded,
-} from "@/lib/bootstrap";
 import { getDashboardData } from "@/lib/dashboard";
 
 export const dynamic = "force-dynamic";
@@ -13,14 +9,9 @@ export default async function DashboardPage() {
   const t = await getTranslations("dashboard");
   const tApp = await getTranslations("app");
 
-  await ensureBootstrapped();
-  // Full Scopus baseline can take minutes — start in background, never block SSR.
-  void ensureScopusDataLoaded().catch(() => undefined);
-
+  // Public read-only: no bootstrap/scan side effects on anonymous page views.
   const data = await getDashboardData();
-  const importing =
-    Boolean(process.env.SCOPUS_API_KEY?.trim()) &&
-    (!data || data.kpis.totalPublications === 0);
+  const importing = !data || data.kpis.totalPublications === 0;
 
   if (!data) {
     return (

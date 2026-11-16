@@ -1,17 +1,10 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
-import { isAuthRequired, openAccessAdminUser } from "@/lib/auth-mode";
 import { consumeRateLimit } from "@/lib/rate-limit";
 
+/** Always requires a real NextAuth admin session — never a synthetic user. */
 export async function requireAdminSession() {
-  if (!isAuthRequired()) {
-    return {
-      session: { user: openAccessAdminUser() },
-      error: null,
-    };
-  }
-
   const session = await getServerSession(authOptions);
   const role = session?.user?.role;
 

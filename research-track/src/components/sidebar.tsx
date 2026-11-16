@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   Activity,
   BookOpen,
   FileText,
   LayoutDashboard,
+  LogIn,
   LogOut,
   Settings,
 } from "lucide-react";
@@ -20,7 +20,7 @@ const links = [
   { href: "/publications", icon: BookOpen, key: "publications" as const },
   { href: "/changes", icon: Activity, key: "changes" as const },
   { href: "/reports", icon: FileText, key: "reports" as const },
-  { href: "/settings", icon: Settings, key: "settings" as const },
+  { href: "/settings", icon: Settings, key: "settings" as const, adminOnly: true },
 ];
 
 export function Sidebar() {
@@ -28,16 +28,10 @@ export function Sidebar() {
   const app = useTranslations("app");
   const locale = useLocale();
   const pathname = usePathname();
-  const [showLogout, setShowLogout] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/status")
-      .then((r) => r.json())
-      .then((data: { authRequired?: boolean }) => {
-        setShowLogout(data.authRequired === true);
-      })
-      .catch(() => setShowLogout(false));
-  }, []);
+  const { data: session, status } = useSession();
+  const isAdmin =
+    status === "authenticated" &&
+    (session?.user as { role?: string } | undefined)?.role === "admin";
 
   async function switchLocale(next: "ar" | "en") {
     await fetch("/api/locale", {
@@ -61,29 +55,31 @@ export function Sidebar() {
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 p-3 md:p-4">
-        {links.map((link) => {
-          const active =
-            link.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(link.href);
-          const Icon = link.icon;
-          return (
-            <Link
-              key={link.key}
-              href={link.href}
-              className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition md:px-4",
-                active
-                  ? "bg-white text-[var(--auiq-navy)] shadow-sm"
-                  : "text-white/85 hover:bg-white/10"
-              )}
-              title={t(link.key)}
-            >
-              <Icon size={18} />
-              <span className="hidden md:inline">{t(link.key)}</span>
-            </Link>
-          );
-        })}
+        {links
+          .filter((link) => !link.adminOnly || isAdmin)
+          .map((link) => {
+            const active =
+              link.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(link.href);
+            const Icon = link.icon;
+            return (
+              <Link
+                key={link.key}
+                href={link.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition md:px-4",
+                  active
+                    ? "bg-white text-[var(--auiq-navy)] shadow-sm"
+                    : "text-white/85 hover:bg-white/10"
+                )}
+                title={t(link.key)}
+              >
+                <Icon size={18} />
+                <span className="hidden md:inline">{t(link.key)}</span>
+              </Link>
+            );
+          })}
       </nav>
 
       <div className="space-y-2 p-3 md:p-4">
@@ -109,16 +105,24 @@ export function Sidebar() {
             EN
           </button>
         </div>
-        {showLogout ? (
+        {isAdmin ? (
           <button
             type="button"
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={() => signOut({ callbackUrl: "/" })}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/80 transition hover:bg-white/10 md:px-4"
           >
             <LogOut size={18} />
             <span className="hidden md:inline">{t("logout")}</span>
           </button>
-        ) : null}
+        ) : (
+          <Link
+            href="/login?callbackUrl=/settings"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/80 transition hover:bg-white/10 md:px-4"
+          >
+            <LogIn size={18} />
+            <span className="hidden md:inline">{t("login")}</span>
+          </Link>
+        )}
       </div>
     </aside>
   );

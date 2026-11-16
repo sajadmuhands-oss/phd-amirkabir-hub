@@ -1,18 +1,15 @@
 /**
- * Auth gate for the research-track app.
- * Default is open access (no login) so the hosted dashboard is usable
- * without ADMIN_PASSWORD. Set AUTH_REQUIRED=true to restore login.
+ * Public deployments allow read-only dashboard pages without login.
+ * Admin pages and all mutation APIs always require a real authenticated admin.
  */
-export function isAuthRequired() {
-  const value = process.env.AUTH_REQUIRED?.trim().toLowerCase();
-  return value === "1" || value === "true" || value === "yes";
+export function isPublicReadPath(pathname: string) {
+  if (pathname === "/") return true;
+  if (pathname.startsWith("/publications")) return true;
+  if (pathname.startsWith("/changes")) return true;
+  if (pathname.startsWith("/reports")) return true;
+  return false;
 }
 
-export function openAccessAdminUser() {
-  return {
-    id: "open-access",
-    email: "open-access@local",
-    name: "وصول مفتوح",
-    role: "admin" as const,
-  };
+export function isAdminOnlyPath(pathname: string) {
+  return pathname === "/settings" || pathname.startsWith("/settings/");
 }

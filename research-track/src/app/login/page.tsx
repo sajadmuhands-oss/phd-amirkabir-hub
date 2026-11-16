@@ -8,8 +8,6 @@ import { useTranslations } from "next-intl";
 type Status = {
   authConfigured?: boolean;
   hasAdmin?: boolean;
-  adminPasswordConfigured?: boolean;
-  hasScopusKey?: boolean;
   bootError?: string | null;
 };
 
@@ -32,15 +30,9 @@ function LoginForm() {
   useEffect(() => {
     fetch("/api/status")
       .then((r) => r.json())
-      .then((data: Status & { authRequired?: boolean }) => {
-        if (data.authRequired === false) {
-          router.replace("/");
-          return;
-        }
-        setStatus(data);
-      })
+      .then((data: Status) => setStatus(data))
       .catch(() => setStatus(null));
-  }, [router]);
+  }, []);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,23 +46,19 @@ function LoginForm() {
     });
     setLoading(false);
     if (result?.error) {
-      // Refresh status — first login may have created the admin via env bootstrap.
       const refreshed = await fetch("/api/status")
         .then((r) => r.json())
         .catch(() => null);
       if (refreshed) setStatus(refreshed);
-      if (refreshed && !refreshed.hasAdmin) {
-        setError(
-          refreshed.adminPasswordConfigured === false
-            ? "سر ADMIN_PASSWORD غير موجود أو أقصر من 8 أحرف. افتح أسرار التطبيق في Cursor، الصق كلمة المرور في ADMIN_PASSWORD، ثم أعد النشر."
-            : "لم يُنشأ حساب المدير بعد. تأكد أن ADMIN_PASSWORD وADMIN_EMAIL محفوظان في أسرار Cursor ثم أعد فتح /login."
-        );
-      } else {
-        setError(t("error"));
-      }
+      setError(
+        refreshed && !refreshed.hasAdmin
+          ? "لم يُنشأ حساب المدير بعد. تأكد أن ADMIN_PASSWORD وADMIN_EMAIL محفوظان في أسرار Cursor ثم أعد النشر."
+          : t("error")
+      );
       return;
     }
-    router.push("/");
+    const callback = searchParams.get("callbackUrl") || "/settings";
+    router.push(callback.startsWith("/") ? callback : "/settings");
     router.refresh();
   }
 
@@ -86,17 +74,14 @@ function LoginForm() {
             {tApp("university")}
           </h1>
           <p className="mt-1 text-sm text-[var(--aui-slate)]">{tApp("system")}</p>
+          <p className="mt-3 text-xs text-[var(--aui-slate)]">
+            لوحة المتابعة للقراءة بدون دخول · الإعدادات تتطلب حساب المدير
+          </p>
         </div>
 
         {status && !status.authConfigured ? (
           <p className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
             إعداد الجلسة غير مكتمل على الخادم.
-          </p>
-        ) : null}
-
-        {status && status.adminPasswordConfigured === false && !status.hasAdmin ? (
-          <p className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            ضع قيمة ADMIN_PASSWORD (8 أحرف فأكثر) في أسرار التطبيق داخل Cursor، ثم أكّد النشر.
           </p>
         ) : null}
 
