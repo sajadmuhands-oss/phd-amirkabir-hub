@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && node scripts/migrate-if-db.mjs && next build",
-    "start": "next start",
+    "build": "prisma generate && next build",
+    "start": "node scripts/migrate-if-db.mjs && next start",
+    "db:migrate:soft": "node scripts/migrate-if-db.mjs --soft",
     "lint": "eslint",
     "postinstall": "prisma generate && node scripts/patch-react-pdf-hyphenate.mjs",
     "db:generate": "prisma generate",
