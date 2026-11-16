@@ -13,6 +13,20 @@
 - مفتاح Elsevier Scopus API
 - (اختياري) Meta WhatsApp Business Cloud API
 
+## الدومين العام (Cloudflare)
+
+- النطاق المؤكد من إعدادات المشروع: **`ol-ui-ac.net`**
+- عنوان النظام: **`https://research.ol-ui-ac.net`**
+- تسجيل الدخول: **`https://research.ol-ui-ac.net/login`**
+- تفاصيل الـ Worker/DNS: [`../cloudflare/README.md`](../cloudflare/README.md)
+
+عيّن في `.env`:
+
+```env
+NEXTAUTH_URL="https://research.ol-ui-ac.net"
+APP_URL="https://research.ol-ui-ac.net"
+```
+
 ## التشغيل السريع
 
 ```bash

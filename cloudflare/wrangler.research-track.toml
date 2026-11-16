@@ -1,0 +1,15 @@
+# Deploy:
+#   npx wrangler deploy --config cloudflare/wrangler.research-track.toml
+# Then set secret:
+#   npx wrangler secret put ORIGIN --config cloudflare/wrangler.research-track.toml
+# Route (zone ol-ui-ac.net):
+#   research.ol-ui-ac.net/*
+
+name = "research-track"
+main = "research-track-proxy.js"
+compatibility_date = "2024-11-01"
+workers_dev = false
+
+[vars]
+# Non-secret defaults — override ORIGIN via `wrangler secret put ORIGIN`
+PUBLIC_HOST = "research.ol-ui-ac.net"

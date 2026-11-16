@@ -13,3 +13,5 @@ venv/
 *.pat
 
 .env.cloudflare
+
+.cloudflare-tunnel/
