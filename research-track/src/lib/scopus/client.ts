@@ -4,7 +4,7 @@ import type {
   SourceMetrics,
   SourcePublication,
 } from "@/lib/sources/types";
-import { parseYear } from "@/lib/utils";
+import { cleanAuthorDisplayName, parseYear } from "@/lib/utils";
 
 const SEARCH_URL = "https://api.elsevier.com/content/search/scopus";
 const AFFILIATION_URL = "https://api.elsevier.com/content/affiliation/affiliation_id";
@@ -16,20 +16,42 @@ function asString(value: unknown) {
   return String(value);
 }
 
+function formatScopusAuthor(
+  author: Record<string, unknown>,
+  index: number
+): string {
+  const given = asString(
+    author["given-name"] || author.givenName || author["ce:given-name"]
+  );
+  const surname = asString(
+    author.surname || author["ce:surname"] || author["preferred-name"]
+  );
+  const authname = asString(author.authname || author["authname"]);
+
+  let raw = "";
+  if (surname && given) raw = `${surname}, ${given}`;
+  else if (authname) raw = authname;
+  else if (surname) raw = surname;
+  else if (given) raw = given;
+  else raw = `Author ${index + 1}`;
+
+  return cleanAuthorDisplayName(raw) || `Author ${index + 1}`;
+}
+
 function extractAuthors(entry: ScopusEntry): SourcePublication["authors"] {
   const authorList = entry.author as Array<Record<string, unknown>> | undefined;
   if (Array.isArray(authorList) && authorList.length > 0) {
     return authorList.map((author, index) => ({
-      name:
-        asString(author["authname"] || author["given-name"] || author.surname) ||
-        `Author ${index + 1}`,
-      scopusAuthorId: asString(author["authid"]),
+      name: formatScopusAuthor(author, index),
+      scopusAuthorId: asString(author["authid"] || author["@auid"]),
       order: index + 1,
     }));
   }
 
   const creator = asString(entry["dc:creator"]);
-  return creator ? [{ name: creator, order: 1 }] : [];
+  if (!creator) return [];
+  // dc:creator may be "Surname1, Surname2" — keep as one label if unparsable
+  return [{ name: cleanAuthorDisplayName(creator) || creator, order: 1 }];
 }
 
 function mapEntry(entry: ScopusEntry): SourcePublication {

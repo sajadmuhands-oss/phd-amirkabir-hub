@@ -1,3 +1,4 @@
+import { ChangeType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   getDailyPeriod,
@@ -49,22 +50,27 @@ export async function getDashboardData() {
         publishedYear: currentYear,
       },
     }),
-    prisma.publication.count({
+    // "Added in period" = newly discovered on Scopus after monitoring began
+    // (ChangeEvent), not the historical archive load date.
+    prisma.changeEvent.count({
       where: {
         institutionId: institution.id,
-        firstSeenAt: { gte: daily.start, lte: daily.end },
+        changeType: ChangeType.NEW_PUBLICATION,
+        discoveredAt: { gte: daily.start, lte: daily.end },
       },
     }),
-    prisma.publication.count({
+    prisma.changeEvent.count({
       where: {
         institutionId: institution.id,
-        firstSeenAt: { gte: weekly.start, lte: weekly.end },
+        changeType: ChangeType.NEW_PUBLICATION,
+        discoveredAt: { gte: weekly.start, lte: weekly.end },
       },
     }),
-    prisma.publication.count({
+    prisma.changeEvent.count({
       where: {
         institutionId: institution.id,
-        firstSeenAt: { gte: monthly.start, lte: monthly.end },
+        changeType: ChangeType.NEW_PUBLICATION,
+        discoveredAt: { gte: monthly.start, lte: monthly.end },
       },
     }),
     prisma.author.count({

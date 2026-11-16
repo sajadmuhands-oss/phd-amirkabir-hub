@@ -1,18 +1,60 @@
 import type { Metadata } from "next";
-import { Amiri, Cairo } from "next/font/google";
+import localFont from "next/font/local";
 import { cookies } from "next/headers";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
-const cairo = Cairo({
-  subsets: ["arabic", "latin"],
+// Local fonts — publish builds must not depend on Google Fonts network access.
+const cairo = localFont({
+  src: [
+    {
+      path: "../fonts/cairo-arabic-400-normal.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/cairo-arabic-700-normal.woff2",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../fonts/cairo-latin-400-normal.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/cairo-latin-700-normal.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
   variable: "--font-cairo",
   display: "swap",
 });
 
-const amiri = Amiri({
-  subsets: ["arabic", "latin"],
-  weight: ["400", "700"],
+const amiri = localFont({
+  src: [
+    {
+      path: "../fonts/amiri-arabic-400-normal.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/amiri-arabic-700-normal.woff2",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../fonts/amiri-latin-400-normal.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/amiri-latin-700-normal.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
   variable: "--font-amiri",
   display: "swap",
 });
