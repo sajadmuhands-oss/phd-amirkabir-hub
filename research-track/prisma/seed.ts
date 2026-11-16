@@ -42,9 +42,9 @@ const DEFAULT_SETTINGS: Array<{ key: string; value: string; isSecret?: boolean }
 
 function requireAdminPassword() {
   const fromEnv = process.env.ADMIN_PASSWORD?.trim() || "";
-  if (fromEnv.length >= 12) return fromEnv;
+  if (fromEnv.length >= 8) return fromEnv;
   throw new Error(
-    "ADMIN_PASSWORD is required (min 12 characters). Set it in the environment before seeding. Random generation is disabled."
+    "ADMIN_PASSWORD is required (min 8 characters). Set it in the environment before seeding. Random generation is disabled."
   );
 }
 
@@ -64,7 +64,7 @@ async function main() {
     });
   } else if (!existingAdmin) {
     throw new Error(
-      "ADMIN_PASSWORD is required (min 12 characters) to create the first admin."
+      "ADMIN_PASSWORD is required (min 8 characters) to create the first admin."
     );
   } else {
     await prisma.user.update({
