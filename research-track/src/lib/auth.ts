@@ -38,11 +38,22 @@ export const authOptions: NextAuthOptions = {
         const limited = consumeRateLimit(`login:${email}`, 8, 15 * 60 * 1000);
         if (!limited.ok) return null;
 
-        await ensureBootstrapped();
+        try {
+          await ensureBootstrapped();
+        } catch {
+          return null;
+        }
 
-        const user = await prisma.user.findUnique({
-          where: { email },
-        });
+        let user = await prisma.user.findUnique({ where: { email } });
+
+        // If env bootstrap created the admin under ADMIN_EMAIL, allow that account only.
+        if (!user) {
+          const envEmail = (process.env.ADMIN_EMAIL || "admin@alayen.edu.iq")
+            .toLowerCase()
+            .trim();
+          if (email !== envEmail) return null;
+          user = await prisma.user.findUnique({ where: { email: envEmail } });
+        }
         if (!user) return null;
 
         const valid = await bcrypt.compare(

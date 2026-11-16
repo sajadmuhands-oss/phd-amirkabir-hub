@@ -1,9 +1,16 @@
 "use client";
 
-import { FormEvent, Suspense, useState } from "react";
+import { FormEvent, Suspense, useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+
+type Status = {
+  authConfigured?: boolean;
+  hasAdmin?: boolean;
+  hasScopusKey?: boolean;
+  bootError?: string | null;
+};
 
 function LoginForm() {
   const t = useTranslations("login");
@@ -12,7 +19,21 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const configError = searchParams.get("error") === "Configuration";
+  const [status, setStatus] = useState<Status | null>(null);
+
+  useEffect(() => {
+    // Stale ?error=Configuration bookmarks confuse users after secrets are set.
+    if (searchParams.get("error") === "Configuration") {
+      router.replace("/login");
+    }
+  }, [searchParams, router]);
+
+  useEffect(() => {
+    fetch("/api/status")
+      .then((r) => r.json())
+      .then((data: Status) => setStatus(data))
+      .catch(() => setStatus(null));
+  }, []);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -26,7 +47,16 @@ function LoginForm() {
     });
     setLoading(false);
     if (result?.error) {
-      setError(t("error"));
+      // Refresh status — first login may have created the admin via env bootstrap.
+      const refreshed = await fetch("/api/status")
+        .then((r) => r.json())
+        .catch(() => null);
+      if (refreshed) setStatus(refreshed);
+      setError(
+        refreshed && !refreshed.hasAdmin
+          ? "لم يُنشأ حساب المدير بعد. تأكد أن ADMIN_PASSWORD وADMIN_EMAIL محفوظان في أسرار Cursor."
+          : t("error")
+      );
       return;
     }
     router.push("/");
@@ -47,9 +77,15 @@ function LoginForm() {
           <p className="mt-1 text-sm text-[var(--aui-slate)]">{tApp("system")}</p>
         </div>
 
-        {configError ? (
+        {status && !status.authConfigured ? (
           <p className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            إعداد الجلسة غير مكتمل. أضف أسرار Cursor (خصوصاً NEXTAUTH_SECRET وADMIN_PASSWORD) ثم أعد المحاولة.
+            إعداد الجلسة غير مكتمل على الخادم.
+          </p>
+        ) : null}
+
+        {status?.bootError ? (
+          <p className="mb-4 rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800">
+            تعذر تهيئة قاعدة البيانات. أعد المحاولة بعد لحظات.
           </p>
         ) : null}
 
