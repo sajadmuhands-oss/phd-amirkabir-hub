@@ -32,11 +32,11 @@ export function ensureBootstrapped() {
  */
 async function ensureFirstAdminFromEnv() {
   const adminPassword = process.env.ADMIN_PASSWORD?.trim() || "";
-  if (adminPassword.length < 12) {
+  if (adminPassword.length < 8) {
     const count = await prisma.user.count();
     if (count === 0) {
       console.error(
-        "ADMIN_PASSWORD (min 12 characters) is required to create the first admin; skipping user bootstrap."
+        "ADMIN_PASSWORD (min 8 characters) is required to create the first admin; skipping user bootstrap."
       );
     }
     return;
