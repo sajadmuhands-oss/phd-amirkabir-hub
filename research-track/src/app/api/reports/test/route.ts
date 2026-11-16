@@ -1,10 +1,21 @@
 import { NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/api-auth";
+import {
+  enforceAdminActionLimit,
+  requireAdminSession,
+} from "@/lib/api-auth";
 import { generateTestReport } from "@/lib/reports/builder";
 
 export async function POST() {
-  const { error } = await requireAdminSession();
-  if (error) return error;
+  const { session, error } = await requireAdminSession();
+  if (error || !session) return error;
+
+  const limited = enforceAdminActionLimit(
+    "reports-test",
+    session.user.id,
+    3,
+    10 * 60 * 1000
+  );
+  if (limited) return limited;
 
   try {
     const result = await generateTestReport();

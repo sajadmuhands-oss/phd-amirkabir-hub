@@ -31,7 +31,7 @@ npm run setup          # prisma generate + db push + seed
 # 3) التطبيق
 npm run dev            # http://localhost:3000
 
-# 4) الجدولة (فحص كل دقيقة + تقارير يومية/أسبوعية/شهرية)
+# 4) الجدولة (فحص مجدول + تقارير يومية/أسبوعية/شهرية)
 npm run worker
 ```
 
@@ -42,14 +42,10 @@ npx prisma migrate deploy
 npm run db:seed
 ```
 
-## بيانات المدير الافتراضية
+## حساب المدير
 
-| الحقل | القيمة |
-|------|--------|
-| البريد | `admin@alayen.edu.iq` |
-| كلمة المرور | `ChangeMe123!` |
-
-يمكن تغييرها عبر `ADMIN_EMAIL` / `ADMIN_PASSWORD` في `.env` قبل `npm run db:seed`.
+عيّن `ADMIN_EMAIL` و`ADMIN_PASSWORD` (12 حرفاً على الأقل) في `.env` قبل `npm run db:seed`.  
+لا تُستخدم كلمة مرور افتراضية معروفة، ولا تُوثَّق بيانات دخول جاهزة في المستودع.
 
 ## أرقام واتساب للطوارئ (متعددة)
 

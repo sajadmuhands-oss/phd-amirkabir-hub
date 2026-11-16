@@ -1,11 +1,22 @@
 import { NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/api-auth";
+import {
+  enforceAdminActionLimit,
+  requireAdminSession,
+} from "@/lib/api-auth";
 import { formatBaghdad } from "@/lib/reports/periods";
 import { sendWhatsAppText } from "@/lib/whatsapp/client";
 
 export async function POST() {
-  const { error } = await requireAdminSession();
-  if (error) return error;
+  const { session, error } = await requireAdminSession();
+  if (error || !session) return error;
+
+  const limited = enforceAdminActionLimit(
+    "whatsapp-test",
+    session.user.id,
+    3,
+    15 * 60 * 1000
+  );
+  if (limited) return limited;
 
   const body = [
     "جامعة العين العراقية",

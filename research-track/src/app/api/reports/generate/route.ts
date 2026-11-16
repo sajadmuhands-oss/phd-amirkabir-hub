@@ -1,12 +1,23 @@
 import { ReportType } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/api-auth";
+import {
+  enforceAdminActionLimit,
+  requireAdminSession,
+} from "@/lib/api-auth";
 import { generateReport, generateTestReport } from "@/lib/reports/builder";
 import { enqueueReport } from "@/lib/queue";
 
 export async function POST(request: Request) {
-  const { error } = await requireAdminSession();
-  if (error) return error;
+  const { session, error } = await requireAdminSession();
+  if (error || !session) return error;
+
+  const limited = enforceAdminActionLimit(
+    "reports-generate",
+    session.user.id,
+    3,
+    10 * 60 * 1000
+  );
+  if (limited) return limited;
 
   const body = await request.json().catch(() => ({}));
   const type = String(body?.type || "TEST").toUpperCase();

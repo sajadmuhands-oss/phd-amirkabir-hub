@@ -54,9 +54,20 @@ export async function PUT(request: Request) {
     if (SECRET_KEYS.has(key) && (/^•/.test(rawValue) || rawValue.includes("•"))) {
       continue;
     }
+    let value = rawValue.trim();
+    if (key === "monitor.intervalMinutes") {
+      const n = Number(value);
+      if (!Number.isFinite(n) || n < 15) {
+        return NextResponse.json(
+          { error: "فاصل الفحص يجب أن يكون 15 دقيقة على الأقل" },
+          { status: 400 }
+        );
+      }
+      value = String(Math.floor(n));
+    }
     entries.push({
       key,
-      value: rawValue.trim(),
+      value,
       isSecret: SECRET_KEYS.has(key),
     });
   }

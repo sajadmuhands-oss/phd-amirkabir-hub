@@ -102,7 +102,7 @@ export async function getReportScheduleConfig() {
   return {
     timezone: settings["timezone"] || "Asia/Baghdad",
     monitorIntervalMinutes: Math.max(
-      1,
+      15,
       Number(
         settings["monitor.intervalMinutes"] ||
           process.env.MONITOR_INTERVAL_MINUTES ||

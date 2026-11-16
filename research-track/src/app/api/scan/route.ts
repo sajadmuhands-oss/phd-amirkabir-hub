@@ -1,11 +1,17 @@
 import { NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/api-auth";
+import {
+  enforceAdminActionLimit,
+  requireAdminSession,
+} from "@/lib/api-auth";
 import { runMonitoringScan } from "@/lib/monitoring/engine";
 import { enqueueMonitorScan } from "@/lib/queue";
 
 export async function POST(request: Request) {
-  const { error } = await requireAdminSession();
-  if (error) return error;
+  const { session, error } = await requireAdminSession();
+  if (error || !session) return error;
+
+  const limited = enforceAdminActionLimit("scan", session.user.id, 2, 10 * 60 * 1000);
+  if (limited) return limited;
 
   const body = await request.json().catch(() => ({}));
   const asyncMode = Boolean(body?.async);

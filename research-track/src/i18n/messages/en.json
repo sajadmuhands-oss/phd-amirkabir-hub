@@ -89,7 +89,7 @@
     "testScopus": "Test Scopus connection",
     "testWhatsApp": "Send WhatsApp test message",
     "recipientsHelp": "Comma-separated numbers with country code, e.g. 9647XXXXXXXX,9647YYYYYYYY",
-    "intervalHelp": "Prefer 15+ minutes to protect Scopus API quotas; manual scan runs a full reconcile",
+    "intervalHelp": "Minimum 15 minutes to protect Scopus API quotas; manual scan runs a full reconcile",
     "whatsappLog": "WhatsApp message log",
     "noMessages": "No messages yet."
   }

@@ -1,3 +1,4 @@
+import { randomBytes } from "crypto";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -29,7 +30,6 @@ const DEFAULT_SETTINGS: Array<{ key: string; value: string; isSecret?: boolean }
   { key: "reports.monthly.time", value: "21:00" },
   {
     key: "monitor.intervalMinutes",
-    // Default 15 minutes to stay within Elsevier API quotas; override via env/UI.
     value: process.env.MONITOR_INTERVAL_MINUTES || "15",
   },
   { key: "alerts.enabled", value: "true" },
@@ -41,17 +41,50 @@ const DEFAULT_SETTINGS: Array<{ key: string; value: string; isSecret?: boolean }
   { key: "timezone", value: "Asia/Baghdad" },
 ];
 
-async function main() {
-  const email = process.env.ADMIN_EMAIL || "admin@alayen.edu.iq";
-  const password = process.env.ADMIN_PASSWORD || "ChangeMe123!";
-  const name = process.env.ADMIN_NAME || "مدير النظام";
-  const passwordHash = await bcrypt.hash(password, 12);
+function resolveAdminPassword() {
+  const fromEnv = process.env.ADMIN_PASSWORD?.trim() || "";
+  if (fromEnv.length >= 12) return fromEnv;
 
-  await prisma.user.upsert({
-    where: { email },
-    update: { name, passwordHash },
-    create: { email, name, passwordHash, role: "admin" },
-  });
+  if (process.env.ALLOW_GENERATED_ADMIN_PASSWORD === "true") {
+    return randomBytes(18).toString("base64url");
+  }
+
+  throw new Error(
+    "ADMIN_PASSWORD is required (min 12 characters). Set it in the environment before seeding."
+  );
+}
+
+async function main() {
+  const email = (process.env.ADMIN_EMAIL || "admin@alayen.edu.iq").toLowerCase().trim();
+  const name = process.env.ADMIN_NAME || "مدير النظام";
+  const existingAdmin = await prisma.user.findUnique({ where: { email } });
+
+  // Only set/rotate password when ADMIN_PASSWORD is explicitly provided,
+  // or when creating the first admin (then require env / generated).
+  let password: string | null = null;
+  if (process.env.ADMIN_PASSWORD?.trim()) {
+    password = resolveAdminPassword();
+  } else if (!existingAdmin) {
+    password = resolveAdminPassword();
+  }
+
+  if (password) {
+    const passwordHash = await bcrypt.hash(password, 12);
+    await prisma.user.upsert({
+      where: { email },
+      update: { name, passwordHash, role: "admin" },
+      create: { email, name, passwordHash, role: "admin" },
+    });
+    if (!process.env.ADMIN_PASSWORD?.trim()) {
+      console.log("Generated one-time ADMIN_PASSWORD (store securely, not in git):");
+      console.log(password);
+    }
+  } else if (existingAdmin) {
+    await prisma.user.update({
+      where: { email },
+      data: { name, role: "admin" },
+    });
+  }
 
   const institution = await prisma.institution.upsert({
     where: { id: "auiq-main" },
@@ -90,7 +123,6 @@ async function main() {
       where: { key: setting.key },
     });
 
-    // Never wipe UI-saved secrets when env/seed values are empty.
     if (
       existing &&
       setting.isSecret &&
@@ -100,26 +132,21 @@ async function main() {
       continue;
     }
 
-    // Migrate legacy 1-minute default to the safer 15-minute default.
-    if (
-      existing &&
-      setting.key === "monitor.intervalMinutes" &&
-      existing.value === "1" &&
-      !process.env.MONITOR_INTERVAL_MINUTES
-    ) {
-      await prisma.systemSetting.update({
-        where: { key: setting.key },
-        data: { value: "15", isSecret: false },
-      });
-      continue;
+    let value = setting.value;
+    if (setting.key === "monitor.intervalMinutes") {
+      const n = Number(value);
+      value = String(Number.isFinite(n) ? Math.max(15, n) : 15);
+      if (existing && Number(existing.value) < 15 && !process.env.MONITOR_INTERVAL_MINUTES) {
+        value = "15";
+      }
     }
 
     await prisma.systemSetting.upsert({
       where: { key: setting.key },
-      update: { value: setting.value, isSecret: setting.isSecret ?? false },
+      update: { value, isSecret: setting.isSecret ?? false },
       create: {
         key: setting.key,
-        value: setting.value,
+        value,
         isSecret: setting.isSecret ?? false,
       },
     });
@@ -127,7 +154,7 @@ async function main() {
 
   console.log("Seed completed.");
   console.log(`Institution: ${institution.nameAr} (AF-ID ${AFFILIATION_ID})`);
-  console.log(`Admin: ${email}`);
+  console.log(`Admin email: ${email}`);
 }
 
 main()
