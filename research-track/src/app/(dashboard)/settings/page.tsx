@@ -3,16 +3,19 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { SettingsForm } from "@/components/settings-form";
 import { authOptions } from "@/lib/auth";
+import { isAuthRequired } from "@/lib/auth-mode";
 import { prisma } from "@/lib/prisma";
 import { maskSecret } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-  const session = await getServerSession(authOptions);
-  if (!session) redirect("/login");
-  const role = (session.user as { role?: string } | undefined)?.role;
-  if (role !== "admin") redirect("/");
+  if (isAuthRequired()) {
+    const session = await getServerSession(authOptions);
+    if (!session) redirect("/login");
+    const role = (session.user as { role?: string } | undefined)?.role;
+    if (role !== "admin") redirect("/");
+  }
   const t = await getTranslations("settings");
   const tDash = await getTranslations("dashboard");
 

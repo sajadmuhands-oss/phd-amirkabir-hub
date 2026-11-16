@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { hasAuthSecret } from "@/lib/auth-secret";
+import { isAuthRequired } from "@/lib/auth-mode";
 import {
   ensureBootstrapped,
   isAdminPasswordConfigured,
@@ -24,6 +25,7 @@ export async function GET() {
 
   return NextResponse.json({
     ok: true,
+    authRequired: isAuthRequired(),
     authConfigured: hasAuthSecret(),
     hasAdmin,
     adminPasswordConfigured: isAdminPasswordConfigured(),

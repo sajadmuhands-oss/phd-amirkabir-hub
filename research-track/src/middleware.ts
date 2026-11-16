@@ -6,7 +6,17 @@ import { resolveAuthSecretEdge } from "@/lib/auth-secret";
 
 ensureAuthEnv();
 
+function authRequired() {
+  const value = process.env.AUTH_REQUIRED?.trim().toLowerCase();
+  return value === "1" || value === "true" || value === "yes";
+}
+
 export async function middleware(req: NextRequest) {
+  // Default: open access — no login wall.
+  if (!authRequired()) {
+    return NextResponse.next();
+  }
+
   const secret = await resolveAuthSecretEdge();
   if (!secret) {
     const login = new URL("/login", req.url);
