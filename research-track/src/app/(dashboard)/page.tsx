@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { TypeChart, YearChart } from "@/components/charts";
 import { StatCard } from "@/components/stat-card";
+import { ensureScopusDataLoaded } from "@/lib/bootstrap";
 import { getDashboardData } from "@/lib/dashboard";
 
 export const dynamic = "force-dynamic";
@@ -9,9 +10,15 @@ export default async function DashboardPage() {
   const t = await getTranslations("dashboard");
   const tApp = await getTranslations("app");
 
-  // Public read-only: no bootstrap/scan side effects on anonymous page views.
+  // First-boot only: if DB has no publications, kick a real Scopus import.
+  // ensureScopusDataLoaded no-ops once rows exist (no per-view API spend).
+  void ensureScopusDataLoaded().catch(() => undefined);
+
   const data = await getDashboardData();
-  const importing = !data || data.kpis.totalPublications === 0;
+  const importing =
+    Boolean(data) &&
+    data!.kpis.totalPublications === 0 &&
+    (data!.lastScan?.status === "RUNNING" || !data!.lastScan);
 
   if (!data) {
     return (

@@ -383,6 +383,23 @@ async function consecutiveFailStreak(
   return streak;
 }
 
+/** Mark abandoned RUNNING scans as FAILED so a new import can start. */
+export async function clearStaleRunningScans(maxAgeMs = 3 * 60 * 1000) {
+  const cutoff = new Date(Date.now() - maxAgeMs);
+  const result = await prisma.scanRun.updateMany({
+    where: {
+      status: ScanStatus.RUNNING,
+      startedAt: { lt: cutoff },
+    },
+    data: {
+      status: ScanStatus.FAILED,
+      finishedAt: new Date(),
+      errorMessage: "انتهت مهلة الفحص (العملية توقفت قبل الاكتمال).",
+    },
+  });
+  return result.count;
+}
+
 export async function runMonitoringScan(options?: {
   triggeredBy?: string;
   sourceCode?: string;
@@ -393,6 +410,28 @@ export async function runMonitoringScan(options?: {
   const triggeredBy = options?.triggeredBy || "scheduler";
   const institution = await ensureInstitution();
   const adapter = getSourceAdapter(sourceCode);
+
+  await clearStaleRunningScans();
+
+  const activeRun = await prisma.scanRun.findFirst({
+    where: {
+      institutionId: institution.id,
+      sourceCode,
+      status: ScanStatus.RUNNING,
+    },
+    orderBy: { startedAt: "desc" },
+  });
+  if (activeRun) {
+    return {
+      scanRunId: activeRun.id,
+      status: ScanStatus.RUNNING,
+      newCount: activeRun.newCount,
+      updatedCount: activeRun.updatedCount,
+      removedCount: activeRun.removedCount,
+      totalFetched: activeRun.totalFetched,
+      errorMessage: "فحص قيد التشغيل بالفعل",
+    };
+  }
 
   const previousSnapshot = await prisma.metricSnapshot.findFirst({
     where: { institutionId: institution.id, sourceCode },
@@ -437,27 +476,28 @@ export async function runMonitoringScan(options?: {
   let totalFetched = 0;
 
   try {
-    const publications = await adapter.fetchPublications({
+    // Persist each page as it arrives so a host timeout still leaves real rows.
+    await adapter.fetchPublications({
       startYear,
-      onPage: async () => {
-        // progress hook reserved for future UI streaming
+      onPage: async (page) => {
+        totalFetched += page.length;
+        for (const pub of page) {
+          await processPublication(institution.id, pub, counters, {
+            baseline: isBaseline,
+          });
+          const existing = await findExistingPublication(institution.id, pub);
+          if (existing) seenIds.add(existing.id);
+        }
+        await prisma.scanRun.update({
+          where: { id: scanRun.id },
+          data: {
+            newCount: counters.newCount,
+            updatedCount: counters.updatedCount,
+            totalFetched,
+          },
+        });
       },
     });
-    totalFetched = publications.length;
-
-    for (const pub of publications) {
-      await processPublication(institution.id, pub, counters, {
-        baseline: isBaseline,
-      });
-      const existing = await findExistingPublication(institution.id, pub);
-      if (existing) seenIds.add(existing.id);
-    }
-
-    // Re-resolve ids after creates
-    for (const pub of publications) {
-      const existing = await findExistingPublication(institution.id, pub);
-      if (existing) seenIds.add(existing.id);
-    }
 
     // Only mark removals on full reconcile — incremental windows would false-delete.
     const removedCount = fullReconcile
