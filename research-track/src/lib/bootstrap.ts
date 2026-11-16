@@ -27,8 +27,9 @@ export function ensureBootstrapped() {
 
 /**
  * First admin is provisioned only from bound env secrets (ADMIN_PASSWORD),
- * never via a public HTTP endpoint. Existing passwords are never overwritten
- * from the environment (avoids an env-controlled backdoor on every request).
+ * never via a public HTTP endpoint. The designated ADMIN_EMAIL account is kept
+ * in sync with ADMIN_PASSWORD (owner-controlled secret only — not a public API).
+ * Other users are never touched.
  */
 async function ensureFirstAdminFromEnv() {
   const adminPassword = process.env.ADMIN_PASSWORD?.trim() || "";
@@ -46,6 +47,23 @@ async function ensureFirstAdminFromEnv() {
     .toLowerCase()
     .trim();
   const name = process.env.ADMIN_NAME || "مدير النظام";
+
+  const existingAdmin = await prisma.user.findUnique({ where: { email } });
+  if (existingAdmin) {
+    const matches = await bcrypt.compare(
+      adminPassword,
+      existingAdmin.passwordHash
+    );
+    if (!matches) {
+      const passwordHash = await bcrypt.hash(adminPassword, 12);
+      await prisma.user.update({
+        where: { email },
+        data: { passwordHash, role: "admin", name },
+      });
+    }
+    return;
+  }
+
   const passwordHash = await bcrypt.hash(adminPassword, 12);
 
   try {
