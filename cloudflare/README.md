@@ -17,9 +17,17 @@ Chosen subdomain: **`research.ol-ui-ac.net`** (not inventing a zone; matches the
 
 | Type | Name | Target | Proxy |
 |------|------|--------|-------|
-| `CNAME` | `research` | `ol-ui-ac.pages.dev` *(or any proxied CF target)* **or** `<tunnel-id>.cfargotunnel.com` if using a named Tunnel | Proxied (orange cloud) |
+| `AAAA` | `research` | `100::` (Workers route / custom-domain style) | Proxied (orange cloud) |
 
-A proxied record is required so the Worker route `research.ol-ui-ac.net/*` can match.
+Preferred when a **named Tunnel** exists:
+
+| Type | Name | Target | Proxy |
+|------|------|--------|-------|
+| `CNAME` | `research` | `<tunnel-id>.cfargotunnel.com` | Proxied |
+
+A proxied record is required so the Worker route `research.ol-ui-ac.net/*` can match (or so the tunnel terminates TLS directly).
+
+**Do not** point `research` at `ol-ui-ac.pages.dev` — that serves the Pages site, not Research Track.
 
 ## Worker route
 

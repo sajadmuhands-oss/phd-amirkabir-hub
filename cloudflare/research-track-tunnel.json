@@ -1,0 +1,21 @@
+{
+  "public_url": "https://research.ol-ui-ac.net",
+  "login_url": "https://research.ol-ui-ac.net/login",
+  "zone": "ol-ui-ac.net",
+  "dns": {
+    "type": "AAAA",
+    "name": "research.ol-ui-ac.net",
+    "content": "100::",
+    "proxied": true
+  },
+  "worker": {
+    "script": "research-track",
+    "route": "research.ol-ui-ac.net/*"
+  },
+  "tunnel": {
+    "mode": "quick",
+    "local_service": "http://127.0.0.1:3000",
+    "named_tunnel": null,
+    "blocker": "API token lacks Account Cloudflare Tunnel:Edit — cannot create <id>.cfargotunnel.com yet"
+  }
+}
