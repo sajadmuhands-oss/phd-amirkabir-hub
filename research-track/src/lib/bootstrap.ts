@@ -12,8 +12,8 @@ let bootPromise: Promise<void> | null = null;
 let scanPromise: Promise<void> | null = null;
 
 /**
- * Ensure hosted/local DB has institution, sources, admin, and Scopus settings
- * synced from environment. Safe to call on every request (runs once).
+ * Ensure hosted/local DB has institution, sources, and (out-of-band) first admin.
+ * Safe to call on every request (runs once per process).
  */
 export function ensureBootstrapped() {
   if (!bootPromise) {
@@ -25,40 +25,55 @@ export function ensureBootstrapped() {
   return bootPromise;
 }
 
-async function bootstrap() {
+/**
+ * First admin is provisioned only from bound env secrets (ADMIN_PASSWORD),
+ * never via a public HTTP endpoint. Existing passwords are never overwritten
+ * from the environment (avoids an env-controlled backdoor on every request).
+ */
+async function ensureFirstAdminFromEnv() {
+  const adminPassword = process.env.ADMIN_PASSWORD?.trim() || "";
+  if (adminPassword.length < 12) {
+    const count = await prisma.user.count();
+    if (count === 0) {
+      console.error(
+        "ADMIN_PASSWORD (min 12 characters) is required to create the first admin; skipping user bootstrap."
+      );
+    }
+    return;
+  }
+
   const email = (process.env.ADMIN_EMAIL || "admin@alayen.edu.iq")
     .toLowerCase()
     .trim();
   const name = process.env.ADMIN_NAME || "مدير النظام";
-  const adminPassword = process.env.ADMIN_PASSWORD?.trim() || "";
+  const passwordHash = await bcrypt.hash(adminPassword, 12);
 
-  const existingAdmin = await prisma.user.findUnique({ where: { email } });
-  // Never invent or silently randomize admin credentials.
-  if (!existingAdmin) {
-    if (adminPassword.length < 12) {
-      console.error(
-        "ADMIN_PASSWORD (min 12 characters) is required to create the first admin; skipping user bootstrap."
-      );
-    } else {
-      await prisma.user.create({
-        data: {
-          email,
-          name,
-          role: "admin",
-          passwordHash: await bcrypt.hash(adminPassword, 12),
-        },
-      });
-    }
-  } else if (adminPassword.length >= 12) {
-    await prisma.user.update({
-      where: { email },
-      data: {
-        name,
-        role: "admin",
-        passwordHash: await bcrypt.hash(adminPassword, 12),
+  try {
+    await prisma.$transaction(
+      async (tx) => {
+        const existing = await tx.user.count();
+        if (existing > 0) return;
+        await tx.user.create({
+          data: {
+            email,
+            name,
+            role: "admin",
+            passwordHash,
+          },
+        });
       },
-    });
+      { isolationLevel: "Serializable" }
+    );
+  } catch (err) {
+    // Concurrent bootstrap lost the race; admin should already exist.
+    const count = await prisma.user.count();
+    if (count > 0) return;
+    throw err;
   }
+}
+
+async function bootstrap() {
+  await ensureFirstAdminFromEnv();
 
   await prisma.institution.upsert({
     where: { id: "auiq-main" },
@@ -112,7 +127,6 @@ async function bootstrap() {
 export function ensureScopusDataLoaded() {
   if (!scanPromise) {
     scanPromise = loadScopusIfEmpty().finally(() => {
-      // Allow a later retry if the first attempt failed or key arrived later.
       setTimeout(() => {
         scanPromise = null;
       }, 60_000);

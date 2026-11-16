@@ -7,19 +7,6 @@ import { resolveAuthSecretEdge } from "@/lib/auth-secret";
 ensureAuthEnv();
 
 export async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-
-  // Public routes (no session required)
-  if (
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/setup") ||
-    pathname.startsWith("/api/setup") ||
-    pathname.startsWith("/api/auth") ||
-    pathname.startsWith("/api/health")
-  ) {
-    return NextResponse.next();
-  }
-
   const secret = await resolveAuthSecretEdge();
   if (!secret) {
     const login = new URL("/login", req.url);
@@ -35,7 +22,7 @@ export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret });
   if (!token) {
     const login = new URL("/login", req.url);
-    login.searchParams.set("callbackUrl", pathname);
+    login.searchParams.set("callbackUrl", req.nextUrl.pathname);
     return NextResponse.redirect(login);
   }
 
@@ -49,7 +36,5 @@ export const config = {
     "/changes/:path*",
     "/reports/:path*",
     "/settings/:path*",
-    "/setup",
-    "/api/setup",
   ],
 };
