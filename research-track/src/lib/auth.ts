@@ -1,7 +1,24 @@
+import { randomBytes } from "crypto";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { ensureAuthEnv } from "@/lib/auth-env";
+import { ensureBootstrapped } from "@/lib/bootstrap";
 import { prisma } from "@/lib/prisma";
+import { consumeRateLimit } from "@/lib/rate-limit";
+
+ensureAuthEnv();
+
+/** Prefer bound NEXTAUTH_SECRET; fall back so hosted boot does not Configuration-error. */
+let runtimeAuthSecret: string | undefined;
+function resolveAuthSecret() {
+  const fromEnv = process.env.NEXTAUTH_SECRET?.trim();
+  if (fromEnv) return fromEnv;
+  if (!runtimeAuthSecret) {
+    runtimeAuthSecret = randomBytes(32).toString("hex");
+  }
+  return runtimeAuthSecret;
+}
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
@@ -18,8 +35,14 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) return null;
 
+        const email = credentials.email.toLowerCase().trim();
+        const limited = consumeRateLimit(`login:${email}`, 8, 15 * 60 * 1000);
+        if (!limited.ok) return null;
+
+        await ensureBootstrapped();
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email.toLowerCase().trim() },
+          where: { email },
         });
         if (!user) return null;
 
@@ -33,7 +56,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role,
+          role: user.role === "admin" ? "admin" : "viewer",
         };
       },
     }),
@@ -41,7 +64,8 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as { role?: string }).role || "admin";
+        const role = (user as { role?: string }).role;
+        token.role = role === "admin" ? "admin" : "viewer";
         token.id = user.id;
       }
       return token;
@@ -49,11 +73,12 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         (session.user as { id?: string; role?: string }).id = token.id as string;
+        const role = token.role as string | undefined;
         (session.user as { id?: string; role?: string }).role =
-          (token.role as string) || "admin";
+          role === "admin" ? "admin" : "viewer";
       }
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: resolveAuthSecret(),
 };
