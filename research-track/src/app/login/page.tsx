@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 type Status = {
   authConfigured?: boolean;
   hasAdmin?: boolean;
+  adminPasswordConfigured?: boolean;
   hasScopusKey?: boolean;
   bootError?: string | null;
 };
@@ -52,11 +53,15 @@ function LoginForm() {
         .then((r) => r.json())
         .catch(() => null);
       if (refreshed) setStatus(refreshed);
-      setError(
-        refreshed && !refreshed.hasAdmin
-          ? "لم يُنشأ حساب المدير بعد. تأكد أن ADMIN_PASSWORD وADMIN_EMAIL محفوظان في أسرار Cursor."
-          : t("error")
-      );
+      if (refreshed && !refreshed.hasAdmin) {
+        setError(
+          refreshed.adminPasswordConfigured === false
+            ? "سر ADMIN_PASSWORD غير موجود أو أقصر من 8 أحرف. افتح أسرار التطبيق في Cursor، الصق كلمة المرور في ADMIN_PASSWORD، ثم أعد النشر."
+            : "لم يُنشأ حساب المدير بعد. تأكد أن ADMIN_PASSWORD وADMIN_EMAIL محفوظان في أسرار Cursor ثم أعد فتح /login."
+        );
+      } else {
+        setError(t("error"));
+      }
       return;
     }
     router.push("/");
@@ -80,6 +85,12 @@ function LoginForm() {
         {status && !status.authConfigured ? (
           <p className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
             إعداد الجلسة غير مكتمل على الخادم.
+          </p>
+        ) : null}
+
+        {status && status.adminPasswordConfigured === false && !status.hasAdmin ? (
+          <p className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            ضع قيمة ADMIN_PASSWORD (8 أحرف فأكثر) في أسرار التطبيق داخل Cursor، ثم أكّد النشر.
           </p>
         ) : null}
 
