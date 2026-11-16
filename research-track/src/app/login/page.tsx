@@ -1,8 +1,7 @@
 "use client";
 
-import { FormEvent, Suspense, useEffect, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -13,15 +12,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [needsSetup, setNeedsSetup] = useState(false);
   const configError = searchParams.get("error") === "Configuration";
-
-  useEffect(() => {
-    fetch("/api/setup")
-      .then((r) => r.json())
-      .then((data) => setNeedsSetup(Boolean(data.needsSetup)))
-      .catch(() => setNeedsSetup(false));
-  }, []);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -35,11 +26,7 @@ function LoginForm() {
     });
     setLoading(false);
     if (result?.error) {
-      setError(
-        needsSetup
-          ? "لا يوجد مدير بعد — أنشئه من صفحة الإعداد أولاً."
-          : t("error")
-      );
+      setError(t("error"));
       return;
     }
     router.push("/");
@@ -62,16 +49,7 @@ function LoginForm() {
 
         {configError ? (
           <p className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            إعداد الجلسة غير مكتمل على الخادم. حدّث التطبيق أو أضف أسرار Cursor ثم أعد المحاولة.
-          </p>
-        ) : null}
-
-        {needsSetup ? (
-          <p className="mb-4 rounded-xl border border-[var(--aui-gold)]/40 bg-[var(--aui-gold)]/10 px-3 py-2 text-sm text-[var(--aui-navy)]">
-            النسخة المستضافة بلا مدير بعد.{" "}
-            <Link href="/setup" className="underline font-semibold">
-              اضغط هنا لإنشاء حساب المدير
-            </Link>
+            إعداد الجلسة غير مكتمل. أضف أسرار Cursor (خصوصاً NEXTAUTH_SECRET وADMIN_PASSWORD) ثم أعد المحاولة.
           </p>
         ) : null}
 
