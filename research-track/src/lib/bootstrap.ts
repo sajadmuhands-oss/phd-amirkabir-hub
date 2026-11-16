@@ -65,7 +65,9 @@ async function ensureFirstAdminFromEnv() {
       { isolationLevel: "Serializable" }
     );
   } catch (err) {
-    // Concurrent bootstrap lost the race; admin should already exist.
+    // Concurrent bootstrap or unique conflict — admin may already exist.
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) return;
     const count = await prisma.user.count();
     if (count > 0) return;
     throw err;
