@@ -2,7 +2,7 @@
   "app": {
     "university": "Al-Ayen Iraqi University",
     "system": "Research Track Monitoring System",
-    "subtitle": "Monitoring research performance via Scopus every minute"
+    "subtitle": "Live Scopus monitoring every 5 minutes — real data only"
   },
   "common": {
     "success": "Operation completed successfully",
@@ -89,7 +89,7 @@
     "testScopus": "Test Scopus connection",
     "testWhatsApp": "Send WhatsApp test message",
     "recipientsHelp": "Comma-separated numbers with country code, e.g. 9647XXXXXXXX,9647YYYYYYYY",
-    "intervalHelp": "Minimum 15 minutes to protect Scopus API quotas; manual scan runs a full reconcile",
+    "intervalHelp": "Minimum 5 minutes for live Scopus data; manual scan runs a full reconcile",
     "whatsappLog": "WhatsApp message log",
     "noMessages": "No messages yet."
   }

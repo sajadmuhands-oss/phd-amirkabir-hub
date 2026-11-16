@@ -30,7 +30,7 @@ const DEFAULT_SETTINGS: Array<{ key: string; value: string; isSecret?: boolean }
   { key: "reports.monthly.time", value: "21:00" },
   {
     key: "monitor.intervalMinutes",
-    value: process.env.MONITOR_INTERVAL_MINUTES || "15",
+    value: process.env.MONITOR_INTERVAL_MINUTES || "5",
   },
   { key: "alerts.enabled", value: "true" },
   { key: "alerts.newPubsThreshold", value: "5" },
@@ -135,9 +135,14 @@ async function main() {
     let value = setting.value;
     if (setting.key === "monitor.intervalMinutes") {
       const n = Number(value);
-      value = String(Number.isFinite(n) ? Math.max(15, n) : 15);
-      if (existing && Number(existing.value) < 15 && !process.env.MONITOR_INTERVAL_MINUTES) {
-        value = "15";
+      value = String(Number.isFinite(n) ? Math.max(5, n) : 5);
+      // Migrate legacy 15-minute default / too-low values to the 5-minute product default.
+      if (
+        existing &&
+        !process.env.MONITOR_INTERVAL_MINUTES &&
+        (Number(existing.value) < 5 || Number(existing.value) === 15)
+      ) {
+        value = "5";
       }
     }
 

@@ -4,7 +4,7 @@
 
 - Scopus Affiliation ID: **60118739**
 - الصفحة الرسمية: https://www.scopus.com/pages/organization/60118739?origin=AffiliationNamesList
-- فاصل الفحص الافتراضي: **كل 15 دقيقة** (`monitor.intervalMinutes=15`)
+- فاصل الفحص الافتراضي: **كل 5 دقائق** (`monitor.intervalMinutes=5`) — بيانات Scopus حقيقية فقط
 
 ## المتطلبات
 
@@ -64,7 +64,7 @@ WHATSAPP_RECIPIENTS=9647xxxxxxxx,9647yyyyyyyy
 
 ## المزايا
 
-- فحص Scopus مجدول عبر BullMQ + Redis (افتراضي كل **15 دقيقة**؛ الفحص اليدوي = مزامنة كاملة)
+- فحص Scopus مجدول عبر BullMQ + Redis (افتراضي كل **5 دقائق**؛ بيانات حقيقية فقط؛ الفحص اليدوي = مزامنة كاملة)
 - الفحوص المجدولة تزايدية (سنوات حديثة) لحماية حصة Elsevier؛ إزالة البحوث فقط عند المزامنة الكاملة
 - أول فحص ناجح يُعامل كـ baseline و**لا** يطلق تنبيه طوارئ بسبب كثرة الإضافات
 - منع التكرار بـ `eid` / `doi` فريدين لكل مؤسسة

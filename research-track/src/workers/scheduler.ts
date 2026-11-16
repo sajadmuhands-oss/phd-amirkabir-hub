@@ -37,7 +37,7 @@ export async function setupRepeatableJobs() {
     await reportsQueue.removeRepeatableByKey(job.key);
   }
 
-  const everyMs = Math.max(15, config.monitorIntervalMinutes) * 60 * 1000;
+  const everyMs = Math.max(5, config.monitorIntervalMinutes) * 60 * 1000;
   await monitorQueue.add(
     "scan",
     { triggeredBy: "scheduler" },

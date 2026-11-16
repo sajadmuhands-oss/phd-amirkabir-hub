@@ -57,9 +57,9 @@ export async function PUT(request: Request) {
     let value = rawValue.trim();
     if (key === "monitor.intervalMinutes") {
       const n = Number(value);
-      if (!Number.isFinite(n) || n < 15) {
+      if (!Number.isFinite(n) || n < 5) {
         return NextResponse.json(
-          { error: "فاصل الفحص يجب أن يكون 15 دقيقة على الأقل" },
+          { error: "فاصل الفحص يجب أن يكون 5 دقائق على الأقل" },
           { status: 400 }
         );
       }
