@@ -1,0 +1,38 @@
+# PostgreSQL + Redis for local/dev.
+# App and worker run via npm (npm run dev / npm run worker).
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: auiq-research-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: research
+      POSTGRES_PASSWORD: research_secret
+      POSTGRES_DB: research_track
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U research -d research_track"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: auiq-research-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres_data:
+  redis_data:

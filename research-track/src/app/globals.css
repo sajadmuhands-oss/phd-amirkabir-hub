@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+:root {
+  --auiq-navy: #002147;
+  --auiq-sapphire: #0d4377;
+  --auiq-gold: #c4a35a;
+  --auiq-mist: #e8eef5;
+  --auiq-ink: #0b1c2c;
+  --auiq-muted: #5b6b7c;
+  --aui-navy: #002147;
+  --aui-sapphire: #0d4377;
+  --aui-gold: #c4a35a;
+  --aui-mist: #e8eef5;
+  --aui-slate: #5b6b7c;
+  --aui-ink: #0b1c2c;
+  --aui-line: #d7e0ea;
+  --background: #f3f6fa;
+  --foreground: #0b1c2c;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-navy: var(--auiq-navy);
+  --color-sapphire: var(--auiq-sapphire);
+  --color-gold: var(--auiq-gold);
+  --color-mist: var(--auiq-mist);
+  --font-sans: var(--font-cairo);
+  --font-display: var(--font-amiri);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--foreground);
+  background:
+    radial-gradient(circle at 12% -10%, rgba(196, 163, 90, 0.18), transparent 42%),
+    radial-gradient(circle at 88% 0%, rgba(13, 67, 119, 0.16), transparent 40%),
+    linear-gradient(180deg, #f7f9fc 0%, #eef3f8 55%, #e8eef5 100%);
+  font-family: var(--font-cairo), "Segoe UI", Tahoma, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.surface {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(0, 33, 71, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.metric-value {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.45s ease-out both;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2.4s ease-in-out infinite;
+}

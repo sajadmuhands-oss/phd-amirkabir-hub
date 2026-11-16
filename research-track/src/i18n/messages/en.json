@@ -1,0 +1,96 @@
+{
+  "app": {
+    "university": "Al-Ayen Iraqi University",
+    "system": "Research Track Monitoring System",
+    "subtitle": "Live Scopus monitoring every 5 minutes — real data only"
+  },
+  "common": {
+    "success": "Operation completed successfully",
+    "error": "An error occurred",
+    "loading": "Loading…",
+    "filter": "Filter",
+    "empty": "No data",
+    "actions": "Actions"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "publications": "Publications",
+    "changes": "Change Log",
+    "reports": "Reports",
+    "settings": "Settings",
+    "logout": "Sign out"
+  },
+  "dashboard": {
+    "total": "Total publications",
+    "year": "Current year",
+    "today": "Added today",
+    "week": "Added this week",
+    "month": "Added this month",
+    "citations": "Total citations",
+    "hindex": "H-index",
+    "authors": "Authors",
+    "byYear": "Publications by year",
+    "byType": "Publications by type",
+    "topJournals": "Top journals",
+    "topAuthors": "Top authors",
+    "recentChanges": "Recent changes",
+    "recentPubs": "Recently discovered",
+    "lastScan": "Last scan",
+    "noData": "No data yet. Configure Scopus and run a manual scan."
+  },
+  "login": {
+    "title": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "error": "Invalid credentials"
+  },
+  "publications": {
+    "title": "Scientific publications",
+    "subtitle": "Local archive of publications (AF-ID 60118739)",
+    "search": "Search by title, DOI, or journal",
+    "year": "Year",
+    "filter": "Filter",
+    "colTitle": "Title",
+    "colAuthors": "Authors",
+    "colJournal": "Journal",
+    "colYear": "Year",
+    "colCitations": "Citations",
+    "empty": "No matching publications yet."
+  },
+  "changes": {
+    "title": "Change log",
+    "subtitle": "Additions, updates, removals, and emergency alerts",
+    "empty": "No changes recorded yet."
+  },
+  "reports": {
+    "title": "Report archive",
+    "subtitle": "Daily, weekly, monthly reports and emergency alerts",
+    "type": "Type",
+    "period": "Period",
+    "sent": "Sent",
+    "pending": "Not sent yet",
+    "empty": "No reports yet.",
+    "pdf": "PDF"
+  },
+  "settings": {
+    "title": "System settings",
+    "scopus": "Scopus settings",
+    "whatsapp": "WhatsApp settings",
+    "schedule": "Report schedule",
+    "alerts": "Emergency alerts",
+    "actions": "Actions",
+    "sources": "Data sources",
+    "save": "Save settings",
+    "scanNow": "Run manual scan",
+    "runScan": "Run manual scan",
+    "testReport": "Send test report",
+    "testConnection": "Test Scopus connection",
+    "testScopus": "Test Scopus connection",
+    "testWhatsApp": "Send WhatsApp test message",
+    "recipientsHelp": "Comma-separated numbers with country code, e.g. 9647XXXXXXXX,9647YYYYYYYY",
+    "intervalHelp": "Minimum 5 minutes for live Scopus data; manual scan runs a full reconcile",
+    "whatsappLog": "WhatsApp message log",
+    "noMessages": "No messages yet."
+  }
+}

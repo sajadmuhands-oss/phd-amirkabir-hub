@@ -1,0 +1,261 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ChangeType {
+  NEW_PUBLICATION
+  UPDATED_PUBLICATION
+  REMOVED_PUBLICATION
+  AUTHOR_CHANGE
+  METRIC_CHANGE
+  SUSPICIOUS_ACTIVITY
+  OTHER
+}
+
+enum ScanStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  PARTIAL
+  FAILED
+}
+
+enum ReportType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  TEST
+  EMERGENCY
+}
+
+enum MessageStatus {
+  PENDING
+  SENT
+  FAILED
+  RETRYING
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String
+  passwordHash String
+  role         String     @default("admin")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  auditLogs    AuditLog[]
+}
+
+model Institution {
+  id              String           @id @default(cuid())
+  nameAr          String           @default("جامعة العين العراقية")
+  nameEn          String           @default("Al-Ayen Iraqi University")
+  affiliationId   String?
+  affiliationUrl  String?
+  logoPath        String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  publications    Publication[]
+  authors         Author[]
+  metricSnapshots MetricSnapshot[]
+  changeEvents    ChangeEvent[]
+  scanRuns        ScanRun[]
+  reports         Report[]
+}
+
+model Source {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  nameAr    String
+  nameEn    String
+  enabled   Boolean  @default(false)
+  config    Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Publication {
+  id              String              @id @default(cuid())
+  institutionId   String
+  sourceCode      String              @default("scopus")
+  eid             String?
+  doi             String?
+  title           String
+  publicationType String?
+  journalName     String?
+  issn            String?
+  volume          String?
+  issue           String?
+  pageRange       String?
+  coverDate       String?
+  publishedYear   Int?
+  citationCount   Int                 @default(0)
+  openAccess      Boolean             @default(false)
+  scopusUrl       String?
+  contentHash     String?
+  firstSeenAt     DateTime            @default(now())
+  lastSeenAt      DateTime            @default(now())
+  isActive        Boolean             @default(true)
+  rawPayload      Json?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  institution     Institution         @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  authors         PublicationAuthor[]
+  changeEvents    ChangeEvent[]
+
+  @@unique([institutionId, eid])
+  @@unique([institutionId, doi])
+  @@index([publishedYear])
+  @@index([firstSeenAt])
+  @@index([lastSeenAt])
+  @@index([publicationType])
+  @@index([journalName])
+}
+
+model Author {
+  id               String              @id @default(cuid())
+  institutionId    String
+  scopusAuthorId   String?
+  name             String
+  nameNormalized   String?
+  publicationCount Int                 @default(0)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  institution      Institution         @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  publications     PublicationAuthor[]
+
+  @@unique([institutionId, scopusAuthorId])
+  @@index([nameNormalized])
+}
+
+model PublicationAuthor {
+  id            String      @id @default(cuid())
+  publicationId String
+  authorId      String
+  authorOrder   Int         @default(1)
+  publication   Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  author        Author      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@unique([publicationId, authorId])
+  @@index([authorId])
+}
+
+model MetricSnapshot {
+  id            String      @id @default(cuid())
+  institutionId String
+  documentCount Int         @default(0)
+  citationCount Int         @default(0)
+  hIndex        Int?
+  authorCount   Int?
+  sourceCode    String      @default("scopus")
+  capturedAt    DateTime    @default(now())
+  institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@index([capturedAt])
+  @@index([institutionId, capturedAt])
+}
+
+model ChangeEvent {
+  id            String       @id @default(cuid())
+  institutionId String
+  publicationId String?
+  changeType    ChangeType
+  summaryAr     String
+  summaryEn     String?
+  severity      String       @default("info")
+  payload       Json?
+  discoveredAt  DateTime     @default(now())
+  institution   Institution  @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  publication   Publication? @relation(fields: [publicationId], references: [id], onDelete: SetNull)
+
+  @@index([discoveredAt])
+  @@index([changeType])
+  @@index([severity])
+  @@index([institutionId, discoveredAt])
+}
+
+model ScanRun {
+  id            String      @id @default(cuid())
+  institutionId String
+  sourceCode    String      @default("scopus")
+  status        ScanStatus  @default(PENDING)
+  startedAt     DateTime    @default(now())
+  finishedAt    DateTime?
+  newCount      Int         @default(0)
+  updatedCount  Int         @default(0)
+  removedCount  Int         @default(0)
+  totalFetched  Int         @default(0)
+  errorMessage  String?
+  triggeredBy   String      @default("scheduler")
+  institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@index([startedAt])
+  @@index([status])
+}
+
+model Report {
+  id            String            @id @default(cuid())
+  institutionId String
+  reportType    ReportType
+  periodKey     String
+  titleAr       String
+  titleEn       String?
+  contentText   String
+  contentJson   Json?
+  pdfPath       String?
+  generatedAt   DateTime          @default(now())
+  sentAt        DateTime?
+  institution   Institution       @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  messages      WhatsAppMessage[]
+
+  @@unique([institutionId, reportType, periodKey])
+  @@index([generatedAt])
+}
+
+model WhatsAppMessage {
+  id             String        @id @default(cuid())
+  reportId       String?
+  recipient      String
+  body           String
+  status         MessageStatus @default(PENDING)
+  attempts       Int           @default(0)
+  maxAttempts    Int           @default(3)
+  providerId     String?
+  responseJson   Json?
+  errorMessage   String?
+  idempotencyKey String        @unique
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  sentAt         DateTime?
+  report         Report?       @relation(fields: [reportId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  isSecret  Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  details   Json?
+  level     String   @default("info")
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([action])
+}
