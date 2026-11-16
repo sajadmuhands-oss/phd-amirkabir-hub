@@ -9,7 +9,6 @@ import {
   getWeeklyPeriod,
   type PeriodRange,
 } from "@/lib/reports/periods";
-import { renderReportPdf } from "@/lib/reports/pdf";
 import { sendWhatsAppText } from "@/lib/whatsapp/client";
 
 export type ReportPayload = {
@@ -193,6 +192,8 @@ async function savePdfIfNeeded(
   await mkdir(dir, { recursive: true });
   const fileName = `${periodKey.replace(/[:/]/g, "_")}.pdf`;
   const filePath = path.join(dir, fileName);
+  // Dynamic import keeps the BullMQ worker bootable if PDF deps mis-resolve under tsx.
+  const { renderReportPdf } = await import("@/lib/reports/pdf");
   const buffer = await renderReportPdf(payload);
   await writeFile(filePath, buffer);
   return path.join("storage", "reports", fileName);

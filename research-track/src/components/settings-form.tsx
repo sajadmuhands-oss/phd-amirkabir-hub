@@ -38,6 +38,7 @@ const FIELD_DEFS: Array<{
     key: "whatsapp.recipients",
     label: "أرقام واتساب للطوارئ والتقارير",
     help: "recipientsHelp",
+    textarea: true,
   },
   {
     key: "monitor.intervalMinutes",
@@ -199,7 +200,7 @@ export function SettingsForm({
       </section>
 
       <section className="surface rounded-2xl p-5">
-        <h2 className="mb-4 text-lg text-[var(--auiq-navy)]">مصادر البيانات</h2>
+        <h2 className="mb-4 text-lg text-[var(--auiq-navy)]">{t("sources")}</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {sources.map((source) => (
             <label
@@ -293,16 +294,28 @@ function Field({
   onChange: (key: string, value: string) => void;
   t: ReturnType<typeof useTranslations>;
 }) {
+  const inputClass =
+    "w-full rounded-xl border border-[rgba(0,33,71,0.12)] bg-white px-3 py-2 outline-none ring-[var(--auiq-sapphire)] focus:ring-2";
+
   return (
-    <label className="block text-sm md:col-span-1">
+    <label className={`block text-sm ${field.textarea ? "md:col-span-2" : "md:col-span-1"}`}>
       <span className="mb-1.5 block text-[var(--auiq-muted)]">{field.label}</span>
-      <input
-        type={field.secret ? "password" : "text"}
-        value={value}
-        onChange={(e) => onChange(field.key, e.target.value)}
-        className="w-full rounded-xl border border-[rgba(0,33,71,0.12)] bg-white px-3 py-2 outline-none ring-[var(--auiq-sapphire)] focus:ring-2"
-        autoComplete="off"
-      />
+      {field.textarea ? (
+        <textarea
+          value={value}
+          onChange={(e) => onChange(field.key, e.target.value)}
+          className={`${inputClass} min-h-[88px]`}
+          autoComplete="off"
+        />
+      ) : (
+        <input
+          type={field.secret ? "password" : "text"}
+          value={value}
+          onChange={(e) => onChange(field.key, e.target.value)}
+          className={inputClass}
+          autoComplete="off"
+        />
+      )}
       {field.help ? (
         <span className="mt-1 block text-xs text-[var(--auiq-muted)]">
           {t(field.help as "recipientsHelp" | "intervalHelp")}

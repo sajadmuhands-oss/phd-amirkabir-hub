@@ -46,3 +46,7 @@ next-env.d.ts
 storage/
 .next/
 *.tsbuildinfo
+
+# redis dump if started without docker
+/dump.rdb
+dump.rdb

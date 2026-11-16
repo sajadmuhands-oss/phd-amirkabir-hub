@@ -6,7 +6,11 @@
   },
   "common": {
     "success": "Operation completed successfully",
-    "error": "An error occurred"
+    "error": "An error occurred",
+    "loading": "Loading…",
+    "filter": "Filter",
+    "empty": "No data",
+    "actions": "Actions"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -41,6 +45,34 @@
     "submit": "Sign in",
     "error": "Invalid credentials"
   },
+  "publications": {
+    "title": "Scientific publications",
+    "subtitle": "Local archive of publications (AF-ID 60118739)",
+    "search": "Search by title, DOI, or journal",
+    "year": "Year",
+    "filter": "Filter",
+    "colTitle": "Title",
+    "colAuthors": "Authors",
+    "colJournal": "Journal",
+    "colYear": "Year",
+    "colCitations": "Citations",
+    "empty": "No matching publications yet."
+  },
+  "changes": {
+    "title": "Change log",
+    "subtitle": "Additions, updates, removals, and emergency alerts",
+    "empty": "No changes recorded yet."
+  },
+  "reports": {
+    "title": "Report archive",
+    "subtitle": "Daily, weekly, monthly reports and emergency alerts",
+    "type": "Type",
+    "period": "Period",
+    "sent": "Sent",
+    "pending": "Not sent yet",
+    "empty": "No reports yet.",
+    "pdf": "PDF"
+  },
   "settings": {
     "title": "System settings",
     "scopus": "Scopus settings",
@@ -48,6 +80,7 @@
     "schedule": "Report schedule",
     "alerts": "Emergency alerts",
     "actions": "Actions",
+    "sources": "Data sources",
     "save": "Save settings",
     "scanNow": "Run manual scan",
     "runScan": "Run manual scan",
@@ -56,6 +89,8 @@
     "testScopus": "Test Scopus connection",
     "testWhatsApp": "Send WhatsApp test message",
     "recipientsHelp": "Comma-separated numbers with country code, e.g. 9647XXXXXXXX,9647YYYYYYYY",
-    "intervalHelp": "Default is 1 minute for continuous affiliation monitoring"
+    "intervalHelp": "Default is 1 minute for continuous affiliation monitoring",
+    "whatsappLog": "WhatsApp message log",
+    "noMessages": "No messages yet."
   }
 }

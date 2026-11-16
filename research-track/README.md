@@ -9,11 +9,9 @@
 ## المتطلبات
 
 - Node.js 20+
-- Docker + Docker Compose (لـ PostgreSQL و Redis)
+- PostgreSQL 16+ و Redis 7+ (عبر Docker Compose أو تثبيت محلي)
 - مفتاح Elsevier Scopus API
 - (اختياري) Meta WhatsApp Business Cloud API
-
-> إن لم يتوفر Docker في بيئتك، شغّل `docker compose up -d` على جهازك المحلي ثم أكمل الخطوات التالية. الكود كامل وجاهز.
 
 ## التشغيل السريع
 
@@ -21,8 +19,10 @@
 cd research-track
 cp .env.example .env
 
-# 1) قواعد البيانات
+# 1) قواعد البيانات — اختر أحد المسارين:
 docker compose up -d
+# أو بدون Docker: شغّل PostgreSQL على المنفذ 5432 و Redis على 6379
+# ثم عدّل DATABASE_URL في .env إلى المنفذ 5432 بدل 5433
 
 # 2) تثبيت وتهيئة
 npm install
