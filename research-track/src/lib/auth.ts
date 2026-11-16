@@ -1,24 +1,13 @@
-import { randomBytes } from "crypto";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { ensureAuthEnv } from "@/lib/auth-env";
+import { resolveAuthSecret } from "@/lib/auth-secret";
 import { ensureBootstrapped } from "@/lib/bootstrap";
 import { prisma } from "@/lib/prisma";
 import { consumeRateLimit } from "@/lib/rate-limit";
 
 ensureAuthEnv();
-
-/** Prefer bound NEXTAUTH_SECRET; fall back so hosted boot does not Configuration-error. */
-let runtimeAuthSecret: string | undefined;
-function resolveAuthSecret() {
-  const fromEnv = process.env.NEXTAUTH_SECRET?.trim();
-  if (fromEnv) return fromEnv;
-  if (!runtimeAuthSecret) {
-    runtimeAuthSecret = randomBytes(32).toString("hex");
-  }
-  return runtimeAuthSecret;
-}
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
