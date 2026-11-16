@@ -23,9 +23,9 @@
   "dashboard": {
     "total": "Total publications",
     "year": "Current year",
-    "today": "Added today",
-    "week": "Added this week",
-    "month": "Added this month",
+    "today": "Discovered today",
+    "week": "Discovered this week",
+    "month": "Discovered this month",
     "citations": "Total citations",
     "hindex": "H-index",
     "authors": "Authors",
