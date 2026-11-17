@@ -2,7 +2,7 @@
   "app": {
     "university": "Al-Ayen Iraqi University",
     "system": "Research Track Monitoring System",
-    "subtitle": "Live Scopus monitoring every 5 minutes — real data only"
+    "subtitle": "Live Scopus monitoring every hour — real data only"
   },
   "common": {
     "success": "Operation completed successfully",
@@ -89,8 +89,26 @@
     "testConnection": "Test Scopus connection",
     "testScopus": "Test Scopus connection",
     "testWhatsApp": "Send WhatsApp test message",
-    "recipientsHelp": "Comma-separated numbers with country code, e.g. 9647XXXXXXXX,9647YYYYYYYY",
-    "intervalHelp": "Minimum 5 minutes for live Scopus data; manual scan runs a full reconcile",
+    "recipientsTitle": "WhatsApp recipients (alerts & reports)",
+    "recipientsHelp": "Add a name and international number (no +), pick channels, and enable/disable from the UI.",
+    "recipientsEmpty": "No recipients yet — add one below.",
+    "recipientName": "Name",
+    "recipientPhone": "WhatsApp number (international)",
+    "recipientPhoneInvalid": "Invalid WhatsApp number (at least 8 digits with country code).",
+    "addRecipient": "Add recipient",
+    "editRecipient": "Edit recipient",
+    "updateRecipient": "Save recipient",
+    "cancelEdit": "Cancel edit",
+    "edit": "Edit",
+    "remove": "Remove",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "chanAlerts": "Instant alerts",
+    "chanDaily": "Daily",
+    "chanWeekly": "Weekly",
+    "chanMonthly": "Monthly",
+    "noChannels": "No channels",
+    "intervalHelp": "Default 60 minutes; minimum 5. Manual scan = full reconcile.",
     "whatsappLog": "WhatsApp message log",
     "noMessages": "No messages yet."
   }

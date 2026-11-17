@@ -260,9 +260,18 @@ export async function generateReport(options: {
 
   let sent = Boolean(report.sentAt);
   if (options.sendWhatsApp !== false) {
+    const channel =
+      options.reportType === ReportType.WEEKLY
+        ? "weekly"
+        : options.reportType === ReportType.MONTHLY
+          ? "monthly"
+          : options.reportType === ReportType.DAILY
+            ? "daily"
+            : "test";
     const message = await sendWhatsAppText({
       body: contentText.slice(0, 4000),
       reportId: report.id,
+      channel,
       idempotencyKey: `report:${options.reportType}:${period.periodKey}`,
     });
     if (message && "status" in message && message.status === "SENT") {

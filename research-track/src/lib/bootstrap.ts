@@ -4,7 +4,11 @@ import {
   clearStaleRunningScans,
   runMonitoringScan,
 } from "@/lib/monitoring/engine";
-import { setSetting } from "@/lib/settings";
+import {
+  DEFAULT_MONITOR_INTERVAL_MINUTES,
+  ensureSetting,
+  setSetting,
+} from "@/lib/settings";
 
 const AFFILIATION_ID = process.env.SCOPUS_AFFILIATION_ID || "60118739";
 const AFFILIATION_URL =
@@ -167,10 +171,11 @@ async function bootstrapInfra() {
   }
   await setSetting("scopus.affiliationId", AFFILIATION_ID);
   await setSetting("scopus.affiliationUrl", AFFILIATION_URL);
-  await setSetting("timezone", "Asia/Baghdad");
-  await setSetting(
+  await ensureSetting("timezone", "Asia/Baghdad");
+  await ensureSetting(
     "monitor.intervalMinutes",
-    process.env.MONITOR_INTERVAL_MINUTES || "5"
+    process.env.MONITOR_INTERVAL_MINUTES ||
+      String(DEFAULT_MONITOR_INTERVAL_MINUTES)
   );
 }
 

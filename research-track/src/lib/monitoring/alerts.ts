@@ -134,6 +134,7 @@ export async function evaluateSuspiciousActivity(input: ScanAlertInput) {
   const message = await sendWhatsAppText({
     body: contentText.slice(0, 4000),
     reportId: report.id,
+    channel: "alerts",
     idempotencyKey: `emergency:${report.id}`,
   });
 
@@ -149,6 +150,101 @@ export async function evaluateSuspiciousActivity(input: ScanAlertInput) {
       action: "alert.emergency",
       level: "error",
       details: { reportId: report.id, reasons },
+    },
+  });
+
+  return report;
+}
+
+/**
+ * After a non-baseline scan with real diffs: in-app events already exist;
+ * also send a short WhatsApp digest to recipients with alerts enabled.
+ */
+export async function notifyScanChanges(input: {
+  institutionId: string;
+  scanRunId: string;
+  newCount: number;
+  updatedCount: number;
+  removedCount: number;
+  baselineScan?: boolean;
+}) {
+  if (input.baselineScan) return null;
+  const total =
+    input.newCount + input.updatedCount + input.removedCount;
+  if (total <= 0) return null;
+
+  const periodKey = `change:${input.scanRunId}`;
+  const existing = await prisma.report.findUnique({
+    where: {
+      institutionId_reportType_periodKey: {
+        institutionId: input.institutionId,
+        reportType: ReportType.EMERGENCY,
+        periodKey,
+      },
+    },
+  });
+  if (existing) return existing;
+
+  const titleAr = "تنبيه تغيير في المسار البحثي";
+  const contentText = [
+    "جامعة العين العراقية",
+    "نظام متابعة المسار البحثي",
+    "🔔 تنبيه تغيير",
+    "",
+    "تم رصد تغييرات أثناء مزامنة Scopus:",
+    `- بحوث جديدة: ${input.newCount}`,
+    `- بحوث محدّثة: ${input.updatedCount}`,
+    `- بحوث لم تعد ظاهرة: ${input.removedCount}`,
+    "",
+    `Affiliation ID: 60118739`,
+    `الوقت: ${new Date().toLocaleString("ar-IQ", { timeZone: "Asia/Baghdad" })}`,
+    "",
+    "التفاصيل في لوحة التحكم ← سجل التغييرات.",
+  ].join("\n");
+
+  const report = await prisma.report.create({
+    data: {
+      institutionId: input.institutionId,
+      reportType: ReportType.EMERGENCY,
+      periodKey,
+      titleAr,
+      titleEn: "Research track change digest",
+      contentText,
+      contentJson: {
+        scanRunId: input.scanRunId,
+        newCount: input.newCount,
+        updatedCount: input.updatedCount,
+        removedCount: input.removedCount,
+        kind: "change-digest",
+      },
+    },
+  });
+
+  const message = await sendWhatsAppText({
+    body: contentText.slice(0, 4000),
+    reportId: report.id,
+    channel: "alerts",
+    idempotencyKey: `change-digest:${input.scanRunId}`,
+  });
+
+  if (message?.status === "SENT") {
+    await prisma.report.update({
+      where: { id: report.id },
+      data: { sentAt: new Date() },
+    });
+  }
+
+  await prisma.auditLog.create({
+    data: {
+      action: "alert.change_digest",
+      level: "info",
+      details: {
+        reportId: report.id,
+        scanRunId: input.scanRunId,
+        newCount: input.newCount,
+        updatedCount: input.updatedCount,
+        removedCount: input.removedCount,
+      },
     },
   });
 

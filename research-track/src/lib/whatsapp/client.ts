@@ -1,6 +1,7 @@
 import { MessageStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { getWhatsAppConfig } from "@/lib/settings";
+import { getWhatsAppConfig, getWhatsAppPhones } from "@/lib/settings";
+import type { RecipientChannel } from "@/lib/whatsapp/recipients";
 
 type SendResult = {
   ok: boolean;
@@ -54,14 +55,19 @@ export async function sendWhatsAppText(options: {
   body: string;
   recipient?: string;
   recipients?: string[];
+  /** Filter stored recipients by channel when no explicit list is passed. */
+  channel?: RecipientChannel;
   reportId?: string;
   idempotencyKey: string;
   maxAttempts?: number;
 }) {
   const config = await getWhatsAppConfig();
+  const channel = options.channel || "test";
   const recipients =
     options.recipients ||
-    (options.recipient ? [options.recipient] : config.recipients);
+    (options.recipient
+      ? [options.recipient]
+      : await getWhatsAppPhones(channel));
 
   if (!config.token || !config.phoneNumberId || recipients.length === 0) {
     return prisma.whatsAppMessage.create({
