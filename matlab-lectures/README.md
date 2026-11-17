@@ -27,7 +27,3 @@
 pip install python-docx pillow
 python3 generate_matlab_lectures_docx.py
 ```
-
-## العرض التفاعلي على المنصة
-
-بالإضافة إلى ملف Word، تتوفر محاضرات تفاعلية داخل المنصة عبر المسار `/matlab` (قالب HTML مع رسومات SVG وتنقّل بلوحة المفاتيح).

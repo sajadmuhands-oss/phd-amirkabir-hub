@@ -271,20 +271,6 @@ def research_delete(item_id: int, db: Session = Depends(get_db)):
     return flash_redirect("/research", "حُذفت المادة.")
 
 
-# ─── MATLAB interactive course ───────────────────────────────
-
-
-@inner.get("/matlab")
-def matlab_course(request: Request):
-    return templates.TemplateResponse(
-        "matlab_course.html",
-        {
-            "request": request,
-            "active": "matlab",
-        },
-    )
-
-
 # ─── Presentations ───────────────────────────────────────────
 
 
