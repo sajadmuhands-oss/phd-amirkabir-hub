@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1f33">
+  <title>دورة MATLAB من الصفر إلى الاحتراف · طلاب الدكتوراه — أمير كبير</title>
+  <link rel="stylesheet" href="{{ u('/static/css/matlab-course.css') }}?v=1">
+</head>
+<body class="ml-course">
+  <div class="ml-bg" aria-hidden="true"></div>
+  <div class="ml-deck" id="mlDeck">
+    <header class="ml-chrome">
+      <div class="ml-chrome-brand">
+        <div class="ml-mark">ML</div>
+        <div>
+          <h1>دورة MATLAB التفاعلية</h1>
+          <p id="mlSlideTitle">غلاف الدورة</p>
+        </div>
+      </div>
+      <div class="ml-progress-wrap" aria-label="تقدم المحاضرة">
+        <div class="ml-progress-meta"><span>التقدم</span><span id="mlProgressLabel">1 / 11</span></div>
+        <div class="ml-progress-track"><div class="ml-progress-fill" id="mlProgressFill"></div></div>
+      </div>
+      <div class="ml-chrome-actions">
+        <button type="button" class="ml-btn ml-btn-ghost" id="mlTocBtn" style="padding:.45rem .9rem;font-size:.8rem">الفهرس</button>
+        <a class="ml-link-back" href="{{ u('/') }}">العودة للمنصة</a>
+      </div>
+    </header>
+    <nav class="ml-toc" id="mlToc" aria-label="فهرس المحاضرات"><h3>وحدات الدورة</h3><div id="mlTocList"></div></nav>
+    <main class="ml-stage" id="mlStage">
+
+<section class="ml-slide is-active" data-title="غلاف الدورة" aria-label="غلاف الدورة">
+  <div class="ml-slide-inner"><div class="ml-hero">
+    <div class="ml-hero-copy ml-fade-up">
+      <p class="ml-brand-hero">MATLAB</p>
+      <h2>من الصفر إلى الاحتراف</h2>
+      <p class="ml-lead">محاضرات تعريفية تفاعلية مع رسومات وأنفوجرافيك احترافي لتعلّم بيئة ماتلاب خطوة بخطوة — من واجهة العمل والمتغيرات حتى Simulink والمشاريع الاحترافية.</p>
+      <div class="ml-cta-row">
+        <button type="button" class="ml-btn ml-btn-primary" id="mlStart">ابدأ خارطة الطريق</button>
+        <button type="button" class="ml-btn ml-btn-ghost" onclick="document.getElementById('mlTocBtn').click()">استعرض الوحدات</button>
+      </div>
+    </div>
+    <div class="ml-hero-art ml-fade-up" aria-hidden="true">
+      <svg viewBox="0 0 460 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="gAmber" x1="40" y1="40" x2="400" y2="320" gradientUnits="userSpaceOnUse"><stop stop-color="#F5A623"/><stop offset="1" stop-color="#E87722"/></linearGradient>
+          <linearGradient id="gCyan" x1="80" y1="300" x2="380" y2="60" gradientUnits="userSpaceOnUse"><stop stop-color="#2EC4B6"/><stop offset="1" stop-color="#1A8F9A"/></linearGradient>
+        </defs>
+        <rect x="36" y="48" width="388" height="264" rx="22" fill="#132A40" stroke="url(#gAmber)" stroke-width="2"/>
+        <rect x="56" y="72" width="160" height="110" rx="10" fill="#0B1F33" stroke="#2EC4B6" stroke-opacity=".45"/>
+        <text x="72" y="98" fill="#2EC4B6" font-family="IBM Plex Mono, monospace" font-size="12">>></text>
+        <text x="92" y="98" fill="#F4F7FB" font-family="IBM Plex Mono, monospace" font-size="12">A = [1 2; 3 4]</text>
+        <text x="72" y="122" fill="#F5A623" font-family="IBM Plex Mono, monospace" font-size="12">plot(x,y)</text>
+        <text x="72" y="146" fill="#9AD27A" font-family="IBM Plex Mono, monospace" font-size="12">ans = 2×2</text>
+        <rect x="236" y="72" width="168" height="110" rx="10" fill="#0B1F33" stroke="#E87722" stroke-opacity=".4"/>
+        <polyline points="255,155 280,120 305,135 330,95 355,110 380,85" fill="none" stroke="url(#gCyan)" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="280" cy="120" r="4" fill="#F5A623"/><circle cx="330" cy="95" r="4" fill="#2EC4B6"/>
+        <rect x="56" y="198" width="348" height="88" rx="10" fill="#0B1F33" stroke="rgba(244,247,251,.12)"/>
+        <rect x="72" y="218" width="70" height="10" rx="3" fill="#E87722" opacity=".8"/>
+        <rect x="72" y="238" width="120" height="8" rx="3" fill="rgba(244,247,251,.2)"/>
+        <rect x="72" y="254" width="90" height="8" rx="3" fill="rgba(244,247,251,.12)"/>
+        <rect x="220" y="218" width="48" height="48" rx="8" fill="url(#gAmber)" opacity=".9"/>
+        <rect x="280" y="218" width="48" height="48" rx="8" fill="url(#gCyan)" opacity=".75"/>
+        <rect x="340" y="218" width="48" height="48" rx="8" fill="rgba(244,247,251,.12)"/>
+        <circle cx="400" cy="40" r="18" fill="#E87722" opacity=".35"/><circle cx="48" cy="300" r="22" fill="#2EC4B6" opacity=".25"/>
+      </svg>
+    </div>
+  </div></div>
+</section>
+
+<section class="ml-slide" data-title="خارطة الطريق">
+  <div class="ml-slide-inner">
+    <div class="ml-kicker ml-fade-up">الوحدة 01</div>
+    <h2 class="ml-fade-up">خارطة الطريق من الصفر إلى الاحتراف</h2>
+    <p class="ml-lead ml-fade-up">مسار تدريجي يبني أساسك الحسابي ثم ينقلك إلى البرمجة، التصور، تحليل البيانات، والنمذجة الاحترافية.</p>
+    <div class="ml-path ml-fade-up">
+      <div class="ml-path-step" style="--step-accent:#2EC4B6"><div class="lvl">مبتدئ</div><h3>الأساسيات</h3><p>الواجهة · المتغيرات · المصفوفات · العمليات</p></div>
+      <div class="ml-path-step" style="--step-accent:#F5A623"><div class="lvl">متوسط</div><h3>البرمجة</h3><p>شروط · حلقات · دوال · سكربتات</p></div>
+      <div class="ml-path-step" style="--step-accent:#E87722"><div class="lvl">متقدم</div><h3>التحليل</h3><p>رسوم · ملفات · معالجة بيانات</p></div>
+      <div class="ml-path-step" style="--step-accent:#9AD27A"><div class="lvl">احترافي</div><h3>النمذجة</h3><p>Simulink · مشاريع · أفضل الممارسات</p></div>
+    </div>
+    <div class="ml-svg-wrap ml-fade-up" style="margin-top:1.2rem" aria-hidden="true">
+      <svg viewBox="0 0 720 120" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="road" x1="0" y1="0" x2="720" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="#2EC4B6"/><stop offset=".45" stop-color="#F5A623"/><stop offset="1" stop-color="#9AD27A"/></linearGradient></defs>
+        <path d="M40 70 C160 20, 260 110, 360 55 S560 10, 680 70" fill="none" stroke="url(#road)" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="40" cy="70" r="10" fill="#2EC4B6"/><circle cx="240" cy="78" r="10" fill="#F5A623"/>
+        <circle cx="440" cy="48" r="10" fill="#E87722"/><circle cx="680" cy="70" r="10" fill="#9AD27A"/>
+        <text x="20" y="100" fill="#A8B8C8" font-size="12" font-family="Cairo,sans-serif">بداية</text>
+        <text x="650" y="100" fill="#A8B8C8" font-size="12" font-family="Cairo,sans-serif">احتراف</text>
+      </svg>
+    </div>
+    <div class="ml-outcomes ml-fade-up"><h3>نواتج التعلّم</h3><ul>
+      <li>تحديد مستواك الحالي وهدفك النهائي في المسار.</li>
+      <li>فهم ترتيب المهارات المطلوبة قبل الدخول في التفاصيل.</li>
+    </ul></div>
+  </div>
+</section>
+
+<section class="ml-slide" data-title="واجهة MATLAB">
+  <div class="ml-slide-inner">
+    <div class="ml-kicker ml-fade-up">الوحدة 02</div>
+    <h2 class="ml-fade-up">ما هو MATLAB وواجهة العمل؟</h2>
+    <p class="ml-lead ml-fade-up">MATLAB بيئة حسابية عالية المستوى للحساب العددي، التصور، ومحاكاة الأنظمة — مع واجهة عمل متكاملة.</p>
+    <div class="ml-grid-2 ml-fade-up">
+      <div>
+        <div class="ml-ide-map">
+          <div class="ml-ide-box"><strong>Command Window</strong><span>تنفيذ الأوامر فورياً وعرض النتائج.</span></div>
+          <div class="ml-ide-box"><strong>Workspace</strong><span>عرض المتغيرات والقيم المخزّنة في الذاكرة.</span></div>
+          <div class="ml-ide-box"><strong>Editor</strong><span>كتابة السكربتات والدوال مع تصحيح الأخطاء.</span></div>
+          <div class="ml-ide-box"><strong>Current Folder</strong><span>إدارة المسار والملفات النشطة للمشروع.</span></div>
+        </div>
+        <div class="ml-outcomes" style="margin-top:1rem"><h3>نواتج التعلّم</h3><ul>
+          <li>تمييز أدوار نوافذ MATLAB الأربع الأساسية.</li>
+          <li>تشغيل أمر بسيط ومراقبة ظهور المتغير في Workspace.</li>
+        </ul></div>
+      </div>
+      <div class="ml-svg-wrap" aria-hidden="true">
+        <svg viewBox="0 0 420 300" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="10" width="400" height="280" rx="14" fill="#132A40" stroke="#E87722" stroke-opacity=".5"/>
+          <rect x="22" y="28" width="110" height="250" rx="8" fill="#0B1F33" stroke="#2EC4B6" stroke-opacity=".4"/>
+          <text x="34" y="52" fill="#2EC4B6" font-size="11" font-family="Cairo,sans-serif">Current Folder</text>
+          <rect x="34" y="66" width="86" height="8" rx="2" fill="rgba(244,247,251,.18)"/>
+          <rect x="34" y="82" width="70" height="8" rx="2" fill="rgba(244,247,251,.12)"/>
+          <rect x="144" y="28" width="250" height="150" rx="8" fill="#0B1F33" stroke="#F5A623" stroke-opacity=".45"/>
+          <text x="158" y="52" fill="#F5A623" font-size="11" font-family="Cairo,sans-serif">Editor / Command</text>
+          <text x="158" y="82" fill="#F4F7FB" font-size="12" font-family="IBM Plex Mono,monospace">> x = 0:0.1:2*pi;</text>
+          <text x="158" y="104" fill="#F4F7FB" font-size="12" font-family="IBM Plex Mono,monospace">> y = sin(x);</text>
+          <text x="158" y="126" fill="#9AD27A" font-size="12" font-family="IBM Plex Mono,monospace">> plot(x,y)</text>
+          <rect x="144" y="190" width="250" height="88" rx="8" fill="#0B1F33" stroke="rgba(244,247,251,.15)"/>
+          <text x="158" y="214" fill="#2EC4B6" font-size="11" font-family="Cairo,sans-serif">Workspace</text>
+          <text x="158" y="238" fill="#A8B8C8" font-size="11" font-family="IBM Plex Mono,monospace">x  1×63 double</text>
+          <text x="158" y="256" fill="#A8B8C8" font-size="11" font-family="IBM Plex Mono,monospace">y  1×63 double</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ml-slide" data-title="المتغيرات والمصفوفات">
+  <div class="ml-slide-inner">
+    <div class="ml-kicker ml-fade-up">الوحدة 03</div>
+    <h2 class="ml-fade-up">المتغيرات والمصفوفات</h2>
+    <p class="ml-lead ml-fade-up">كل شيء في MATLAB مصفوفة. إتقان إنشاء المتجهات والمصفوفات هو أساس السرعة والدقة.</p>
+    <div class="ml-grid-2 ml-fade-up">
+      <div>
+        <div class="ml-badge">إنشاء أساسي</div>
+        <pre class="ml-code"><span class="cm">% متجه صف ومتجه عمود</span>
+a = <span class="st">[1 2 3 4]</span>;
+b = <span class="st">[1; 2; 3]</span>;
+A = <span class="st">[1 2 3; 4 5 6]</span>;
+Z = <span class="fn">zeros</span>(3); I = <span class="fn">eye</span>(3);</pre>
+        <div class="ml-matrix" aria-label="مثال مصفوفة"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></div>
+      </div>
+      <div>
+        <div class="ml-panel"><h3>مفاهيم أساسية</h3><ul>
+          <li><strong>size / length</strong> لمعرفة الأبعاد.</li>
+          <li>الفهرسة بـ A(i,j) والشريحة A(:,2).</li>
+          <li>الدمج الأفقي [A B] والعمودي [A; B].</li>
+        </ul></div>
+        <div class="ml-outcomes"><h3>نواتج التعلّم</h3><ul>
+          <li>إنشاء متجهات ومصفوفات بطرق متعددة.</li>
+          <li>قراءة وفهرسة عناصر المصفوفة بثقة.</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ml-slide" data-title="العمليات الحسابية">
+  <div class="ml-slide-inner">
+    <div class="ml-kicker ml-fade-up">الوحدة 04</div>
+    <h2 class="ml-fade-up">العمليات الحسابية والمنطقية</h2>
+    <p class="ml-lead ml-fade-up">الفرق الجوهري: ضرب المصفوفات * مقابل العمليات عنصرًا بعنصر .* ./ .^</p>
+    <div class="ml-compare ml-fade-up">
+      <div class="ml-panel"><span class="ml-badge">Matrix ops</span><h3>عمليات مصفوفية</h3>
+        <pre class="ml-code">C = A * B;
+D = A \ b;
+E = A.';</pre>
+        <p>تتطلّب توافق الأبعاد وفق قواعد الجبر الخطي.</p>
+      </div>
+      <div class="ml-panel"><span class="ml-badge">Element-wise</span><h3>عنصرًا بعنصر</h3>
+        <pre class="ml-code">C = A .* B;
+D = A ./ B;
+E = A .^ 2;</pre>
+        <p>مثالية لمعالجة الإشارات والصور والنقاط البيانية.</p>
+      </div>
+    </div>
+    <div class="ml-outcomes ml-fade-up"><h3>نواتج التعلّم</h3><ul>
+      <li>اختيار العملية الصحيحة حسب الهدف الحسابي.</li>
+      <li>استخدام المقارنات المنطقية لتصفية البيانات.</li>
+    </ul></div>
+  </div>
+</section>
+
+<section class="ml-slide" data-title="الشروط والحلقات">
+  <div class="ml-slide-inner">
+    <div class="ml-kicker ml-fade-up">الوحدة 05</div>
+    <h2 class="ml-fade-up">البرمجة: الشروط والحلقات</h2>
+    <p class="ml-lead ml-fade-up">حوّل الحسابات اليدوية إلى منطق قابل للتكرار مع if و for و while.</p>
+    <div class="ml-grid-2 ml-fade-up">
+      <pre class="ml-code"><span class="kw">for</span> k = 1:10
+    <span class="kw">if</span> <span class="fn">mod</span>(k,2)==0
+        <span class="fn">disp</span>([<span class="st">'even '</span> <span class="fn">num2str</span>(k)])
+    <span class="kw">else</span>
+        <span class="fn">disp</span>([<span class="st">'odd  '</span> <span class="fn">num2str</span>(k)])
+    <span class="kw">end</span>
+<span class="kw">end</span></pre>
+      <div>
+        <div class="ml-flow">
+          <span class="ml-flow-node">ابدأ</span><span class="ml-flow-arrow">→</span>
+          <span class="ml-flow-node">شرط؟</span><span class="ml-flow-arrow">→</span>
+          <span class="ml-flow-node">نفّذ كتلة</span><span class="ml-flow-arrow">→</span>
+          <span class="ml-flow-node">تكرار / خروج</span>
+        </div>
+        <div class="ml-panel"><h3>نصيحة أداء</h3><p>فضّل العمليات المتجهية (vectorization) على الحلقات الثقيلة كلما أمكن.</p></div>
+        <div class="ml-outcomes"><h3>نواتج التعلّم</h3><ul>
+          <li>كتابة شروط متداخلة وحلقات آمنة.</li>
+          <li>معرفة متى تستبدل الحلقة بعملية متجهية.</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ml-slide" data-title="الدوال والسكربتات">
+  <div class="ml-slide-inner">
+    <div class="ml-kicker ml-fade-up">الوحدة 06</div>
+    <h2 class="ml-fade-up">الدوال والسكربتات</h2>
+    <p class="ml-lead ml-fade-up">السكربت ينفّذ أوامر في Workspace العام؛ الدالة تعزل المدخلات والمخرجات وتعيد الاستخدام.</p>
+    <div class="ml-grid-2 ml-fade-up">
+      <div>
+        <div class="ml-badge">function file</div>
+        <pre class="ml-code"><span class="kw">function</span> [m,s] = <span class="fn">stats_basic</span>(x)
+    m = <span class="fn">mean</span>(x); s = <span class="fn">std</span>(x);
+<span class="kw">end</span></pre>
+        <div class="ml-badge">script</div>
+        <pre class="ml-code">data = <span class="fn">rand</span>(1,200);
+[mu,sig] = <span class="fn">stats_basic</span>(data);</pre>
+      </div>
+      <div>
+        <div class="ml-svg-wrap" aria-hidden="true">
+          <svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="70" width="100" height="70" rx="12" fill="#E87722" opacity=".85"/>
+            <text x="42" y="110" fill="#0B1F33" font-size="14" font-weight="700" font-family="Cairo,sans-serif">مدخلات</text>
+            <line x1="120" y1="105" x2="155" y2="105" stroke="#F4F7FB" stroke-width="3"/>
+            <rect x="155" y="55" width="120" height="100" rx="14" fill="#132A40" stroke="#2EC4B6"/>
+            <text x="183" y="110" fill="#2EC4B6" font-size="14" font-weight="700" font-family="Cairo,sans-serif">الدالة</text>
+            <line x1="275" y1="105" x2="310" y2="105" stroke="#F4F7FB" stroke-width="3"/>
+            <rect x="310" y="70" width="30" height="70" rx="8" fill="#F5A623"/>
+            <text x="20" y="40" fill="#A8B8C8" font-size="12" font-family="Cairo,sans-serif">عزل النطاق (Local Scope)</text>
+          </svg>
+        </div>
+        <div class="ml-outcomes"><h3>نواتج التعلّم</h3><ul>
+          <li>التفريق بين script و function واختيار الأنسب.</li>
+          <li>كتابة دالة بمخرجات متعددة وتوثيقها.</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ml-slide" data-title="الرسوم البيانية">
+  <div class="ml-slide-inner">
+    <div class="ml-kicker ml-fade-up">الوحدة 07</div>
+    <h2 class="ml-fade-up">الرسوم البيانية والتصور</h2>
+    <p class="ml-lead ml-fade-up">من plot إلى الرسوم ثلاثية الأبعاد — التصور الجيد يختصر صفحات من النتائج الرقمية.</p>
+    <div class="ml-grid-2 ml-fade-up">
+      <div>
+        <pre class="ml-code">x = 0:0.05:2*<span class="fn">pi</span>;
+y1 = <span class="fn">sin</span>(x); y2 = <span class="fn">cos</span>(x);
+<span class="fn">figure</span>; <span class="fn">hold</span> <span class="kw">on</span>
+<span class="fn">plot</span>(x,y1,<span class="st">'LineWidth'</span>,2)
+<span class="fn">plot</span>(x,y2,<span class="st">'--'</span>)
+<span class="fn">grid</span> <span class="kw">on</span>; <span class="fn">legend</span>(<span class="st">'sin'</span>,<span class="st">'cos'</span>)</pre>
+        <div class="ml-grid-3" style="margin-top:.85rem">
+          <div class="ml-panel"><h3>plot</h3><p>منحنيات 2D</p></div>
+          <div class="ml-panel"><h3>scatter</h3><p>نقاط مبعثرة</p></div>
+          <div class="ml-panel"><h3>surf</h3><p>أسطح 3D</p></div>
+        </div>
+      </div>
+      <div class="ml-svg-wrap" aria-hidden="true">
+        <svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+          <rect x="20" y="20" width="360" height="220" rx="12" fill="#0B1F33" stroke="rgba(244,247,251,.15)"/>
+          <line x1="50" y1="210" x2="360" y2="210" stroke="rgba(244,247,251,.25)"/>
+          <line x1="50" y1="40" x2="50" y2="210" stroke="rgba(244,247,251,.25)"/>
+          <polyline points="50,125 90,70 130,125 170,180 210,125 250,70 290,125 330,180 360,125" fill="none" stroke="#E87722" stroke-width="3" stroke-linecap="round"/>
+          <polyline points="50,125 90,180 130,125 170,70 210,125 250,180 290,125 330,70 360,125" fill="none" stroke="#2EC4B6" stroke-width="2.5" stroke-dasharray="8 5"/>
+        </svg>
+      </div>
+    </div>
+    <div class="ml-outcomes ml-fade-up"><h3>نواتج التعلّم</h3><ul>
+      <li>رسم منحنيات متعددة مع تسميات وشبكة ووسيلة إيضاح.</li>
+      <li>اختيار نوع الرسم المناسب لطبيعة البيانات.</li>
+    </ul></div>
+  </div>
+</section>
+
+<section class="ml-slide" data-title="تحليل البيانات">
+  <div class="ml-slide-inner">
+    <div class="ml-kicker ml-fade-up">الوحدة 08</div>
+    <h2 class="ml-fade-up">تحليل البيانات والملفات</h2>
+    <p class="ml-lead ml-fade-up">استورد، نظّف، حلّل، ثم صدّر — دورة عمل الباحث اليومية داخل MATLAB.</p>
+    <div class="ml-grid-3 ml-fade-up">
+      <div class="ml-panel"><h3>قراءة</h3><pre class="ml-code">T = <span class="fn">readtable</span>(<span class="st">'data.csv'</span>);</pre><p>CSV · Excel · MAT</p></div>
+      <div class="ml-panel"><h3>تحليل</h3><pre class="ml-code">m = <span class="fn">mean</span>(T.x);
+<span class="fn">histogram</span>(T.x)</pre><p>إحصاء · تصفية</p></div>
+      <div class="ml-panel"><h3>تصدير</h3><pre class="ml-code"><span class="fn">writetable</span>(T,<span class="st">'out.csv'</span>);</pre><p>حفظ النتائج</p></div>
+    </div>
+    <div class="ml-outcomes ml-fade-up"><h3>نواتج التعلّم</h3><ul>
+      <li>تحميل جداول بيانات وإجراء ملخص إحصائي سريع.</li>
+      <li>حفظ مخرجات التحليل بصيغ قابلة للمشاركة.</li>
+    </ul></div>
+  </div>
+</section>
+
+<section class="ml-slide" data-title="Simulink">
+  <div class="ml-slide-inner">
+    <div class="ml-kicker ml-fade-up">الوحدة 09</div>
+    <h2 class="ml-fade-up">Simulink وأدوات النمذجة</h2>
+    <p class="ml-lead ml-fade-up">نمذجة الأنظمة بالسحب والإفلات: إشارة → كتلة ديناميكية → راسم → تحليل.</p>
+    <div class="ml-grid-2 ml-fade-up">
+      <div>
+        <div class="ml-flow">
+          <span class="ml-flow-node">Source</span><span class="ml-flow-arrow">→</span>
+          <span class="ml-flow-node">Plant / Controller</span><span class="ml-flow-arrow">→</span>
+          <span class="ml-flow-node">Sink / Scope</span>
+        </div>
+        <div class="ml-panel"><h3>متى تستخدم Simulink؟</h3><ul>
+          <li>أنظمة التحكم والديناميكا المستمرة/المتقطعة.</li>
+          <li>محاكاة متعددة المجالات.</li>
+          <li>Model-Based Design وتوليد الكود.</li>
+        </ul></div>
+      </div>
+      <div class="ml-svg-wrap" aria-hidden="true">
+        <svg viewBox="0 0 420 240" xmlns="http://www.w3.org/2000/svg">
+          <rect x="20" y="90" width="90" height="50" rx="10" fill="#F5A623"/>
+          <text x="40" y="120" fill="#0B1F33" font-size="13" font-weight="700" font-family="Cairo,sans-serif">Step</text>
+          <line x1="110" y1="115" x2="150" y2="115" stroke="#F4F7FB" stroke-width="3"/>
+          <rect x="150" y="75" width="120" height="80" rx="12" fill="#132A40" stroke="#2EC4B6" stroke-width="2"/>
+          <text x="168" y="120" fill="#2EC4B6" font-size="13" font-weight="700" font-family="Cairo,sans-serif">Transfer Fcn</text>
+          <line x1="270" y1="115" x2="310" y2="115" stroke="#F4F7FB" stroke-width="3"/>
+          <rect x="310" y="90" width="90" height="50" rx="10" fill="#E87722"/>
+          <text x="330" y="120" fill="#fff" font-size="13" font-weight="700" font-family="Cairo,sans-serif">Scope</text>
+        </svg>
+      </div>
+    </div>
+    <div class="ml-outcomes ml-fade-up"><h3>نواتج التعلّم</h3><ul>
+      <li>وصف مسار إشارة بسيط في Simulink.</li>
+      <li>ربط نمذجة الكتل بمفاهيم MATLAB الحسابية.</li>
+    </ul></div>
+  </div>
+</section>
+
+<section class="ml-slide" data-title="مسار ختامي">
+  <div class="ml-slide-inner">
+    <div class="ml-kicker ml-fade-up">الوحدة 10</div>
+    <h2 class="ml-fade-up">مشاريع احترافية وأفضل الممارسات</h2>
+    <p class="ml-lead ml-fade-up">اختتم المسار بمشروع متكامل وعادات عمل تليق ببحث الدكتوراه.</p>
+    <div class="ml-grid-3 ml-fade-up">
+      <div class="ml-panel"><h3>مشروع 1</h3><p>تحليل إشارة: استيراد → تنظيف → رسم → مؤشرات.</p></div>
+      <div class="ml-panel"><h3>مشروع 2</h3><p>حل نظام معادلات ومحاكاة استجابة خطوة.</p></div>
+      <div class="ml-panel"><h3>مشروع 3</h3><p>نموذج Simulink لمتحكم مع مقارنة سيناريوهات.</p></div>
+    </div>
+    <div class="ml-panel ml-fade-up" style="margin-top:1rem"><h3>أفضل الممارسات</h3><ul>
+      <li>أسماء ملفات ودوال واضحة، وتعليقات هادفة.</li>
+      <li>فصل البيانات / الكود / النتائج في مجلدات منظمة.</li>
+      <li>تجنّب clear all العشوائي؛ استخدم نطاقاً محلياً عبر الدوال.</li>
+      <li>ثبّت البذور العشوائية لإعادة الإنتاج العلمي.</li>
+    </ul></div>
+    <div class="ml-outcomes ml-fade-up"><h3>نواتج التعلّم الختامية</h3><ul>
+      <li>امتلاك مسار عمل من الفكرة إلى نتيجة قابلة للعرض.</li>
+      <li>تطبيق عادات تنظيم الكود المناسبة للبحث الأكاديمي.</li>
+    </ul></div>
+    <div class="ml-cta-row ml-fade-up">
+      <button type="button" class="ml-btn ml-btn-primary" onclick="location.hash='slide-0';location.reload()">إعادة الغلاف</button>
+      <a class="ml-btn ml-btn-ghost" href="{{ u('/presentations') }}" style="text-decoration:none;display:inline-flex;align-items:center">أرشيف العروض</a>
+    </div>
+  </div>
+</section>
+
+    </main>
+    <footer class="ml-nav-bar">
+      <button type="button" class="ml-btn ml-btn-ghost" id="mlPrev">السابق</button>
+      <div class="ml-dots" id="mlDots" aria-label="مؤشرات الشرائح"></div>
+      <div class="ml-nav-hint"><kbd>←</kbd> التالي · <kbd>→</kbd> السابق · <kbd>T</kbd> الفهرس</div>
+      <button type="button" class="ml-btn ml-btn-primary" id="mlNext">التالي</button>
+    </footer>
+  </div>
+  <script src="{{ u('/static/js/matlab-course.js') }}?v=1"></script>
+</body>
+</html>
