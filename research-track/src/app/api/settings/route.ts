@@ -2,7 +2,15 @@ import { NextResponse } from "next/server";
 import { requireAdminSession } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
 import { maskSecret } from "@/lib/utils";
-import { setSettings } from "@/lib/settings";
+import {
+  DEFAULT_MONITOR_INTERVAL_MINUTES,
+  MIN_MONITOR_INTERVAL_MINUTES,
+  setSettings,
+} from "@/lib/settings";
+import {
+  normalizeRecipientsInput,
+  serializeRecipientRecords,
+} from "@/lib/whatsapp/recipients";
 import { setupRepeatableJobs } from "@/workers/scheduler";
 
 const SECRET_KEYS = new Set([
@@ -21,6 +29,20 @@ const ALLOWED_SETTING_KEYS = new Set([
   "whatsapp.recipients",
   "monitor.intervalMinutes",
   "timezone",
+  "reports.daily.enabled",
+  "reports.daily.time",
+  "reports.weekly.enabled",
+  "reports.weekly.day",
+  "reports.weekly.time",
+  "reports.monthly.enabled",
+  "reports.monthly.day",
+  "reports.monthly.time",
+  "alerts.enabled",
+  "alerts.newPubsThreshold",
+  "alerts.removedThreshold",
+  "alerts.citationDropPct",
+  "alerts.scanFailStreak",
+  "alerts.cooldownMinutes",
 ]);
 
 export async function GET() {
@@ -54,15 +76,12 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "بيانات غير صالحة" }, { status: 400 });
   }
 
-  const updates = body.settings as Record<string, string> | undefined;
-  if (!updates) {
-    return NextResponse.json({ error: "settings مطلوبة" }, { status: 400 });
-  }
-
+  const updates = (body.settings || {}) as Record<string, string>;
   const entries: Array<{ key: string; value: string; isSecret?: boolean }> = [];
 
   for (const [key, rawValue] of Object.entries(updates)) {
     if (!ALLOWED_SETTING_KEYS.has(key)) continue;
+    if (key === "whatsapp.recipients") continue; // handled via recipients array
     if (typeof rawValue !== "string") continue;
     if (SECRET_KEYS.has(key) && (/^•/.test(rawValue) || rawValue.includes("•"))) {
       continue;
@@ -70,9 +89,11 @@ export async function PUT(request: Request) {
     let value = rawValue.trim();
     if (key === "monitor.intervalMinutes") {
       const n = Number(value);
-      if (!Number.isFinite(n) || n < 5) {
+      if (!Number.isFinite(n) || n < MIN_MONITOR_INTERVAL_MINUTES) {
         return NextResponse.json(
-          { error: "فاصل الفحص يجب أن يكون 5 دقائق على الأقل" },
+          {
+            error: `فاصل الفحص يجب أن يكون ${MIN_MONITOR_INTERVAL_MINUTES} دقائق على الأقل (الافتراضي ${DEFAULT_MONITOR_INTERVAL_MINUTES})`,
+          },
           { status: 400 }
         );
       }
@@ -82,6 +103,22 @@ export async function PUT(request: Request) {
       key,
       value,
       isSecret: SECRET_KEYS.has(key),
+    });
+  }
+
+  if (body.recipients !== undefined) {
+    const recipients = normalizeRecipientsInput(body.recipients);
+    entries.push({
+      key: "whatsapp.recipients",
+      value: serializeRecipientRecords(recipients),
+      isSecret: false,
+    });
+  } else if (typeof updates["whatsapp.recipients"] === "string") {
+    const recipients = normalizeRecipientsInput(updates["whatsapp.recipients"]);
+    entries.push({
+      key: "whatsapp.recipients",
+      value: serializeRecipientRecords(recipients),
+      isSecret: false,
     });
   }
 

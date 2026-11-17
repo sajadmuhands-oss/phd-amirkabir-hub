@@ -1,5 +1,14 @@
 import { prisma } from "@/lib/prisma";
-import { parseRecipients } from "@/lib/utils";
+import {
+  parseRecipientRecords,
+  phonesForChannel,
+  type RecipientChannel,
+  type WhatsAppRecipient,
+} from "@/lib/whatsapp/recipients";
+
+/** Product default: hourly Scopus monitor (user requirement). */
+export const DEFAULT_MONITOR_INTERVAL_MINUTES = 60;
+export const MIN_MONITOR_INTERVAL_MINUTES = 5;
 
 export async function getSetting(key: string, fallback = "") {
   const row = await prisma.systemSetting.findUnique({ where: { key } });
@@ -18,6 +27,19 @@ export async function setSetting(key: string, value: string, isSecret = false) {
     where: { key },
     update: { value, isSecret },
     create: { key, value, isSecret },
+  });
+}
+
+/** Create only when missing — never overwrite an existing value. */
+export async function ensureSetting(
+  key: string,
+  value: string,
+  isSecret = false
+) {
+  const existing = await prisma.systemSetting.findUnique({ where: { key } });
+  if (existing) return existing;
+  return prisma.systemSetting.create({
+    data: { key, value, isSecret },
   });
 }
 
@@ -76,13 +98,22 @@ export async function getWhatsAppConfig() {
     process.env.WHATSAPP_RECIPIENT ||
     "";
 
+  const recipientRecords: WhatsAppRecipient[] =
+    parseRecipientRecords(recipientsRaw);
+
   return {
     token: settings["whatsapp.token"] || process.env.WHATSAPP_TOKEN || "",
     phoneNumberId:
       settings["whatsapp.phoneNumberId"] || process.env.WHATSAPP_PHONE_NUMBER_ID || "",
-    recipients: parseRecipients(recipientsRaw),
+    recipientRecords,
+    recipients: phonesForChannel(recipientRecords, "test"),
     recipientsRaw,
   };
+}
+
+export async function getWhatsAppPhones(channel: RecipientChannel) {
+  const config = await getWhatsAppConfig();
+  return phonesForChannel(config.recipientRecords, channel);
 }
 
 export async function getReportScheduleConfig() {
@@ -102,11 +133,11 @@ export async function getReportScheduleConfig() {
   return {
     timezone: settings["timezone"] || "Asia/Baghdad",
     monitorIntervalMinutes: Math.max(
-      5,
+      MIN_MONITOR_INTERVAL_MINUTES,
       Number(
         settings["monitor.intervalMinutes"] ||
           process.env.MONITOR_INTERVAL_MINUTES ||
-          5
+          DEFAULT_MONITOR_INTERVAL_MINUTES
       )
     ),
     daily: {

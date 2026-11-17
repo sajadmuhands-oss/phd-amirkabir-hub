@@ -5,7 +5,10 @@ import {
   type Publication,
 } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { evaluateSuspiciousActivity } from "@/lib/monitoring/alerts";
+import {
+  evaluateSuspiciousActivity,
+  notifyScanChanges,
+} from "@/lib/monitoring/alerts";
 import { getSourceAdapter } from "@/lib/sources";
 import type { SourcePublication } from "@/lib/sources/types";
 import {
@@ -587,6 +590,15 @@ export async function runMonitoringScan(options?: {
       removedCount,
       previousCitations: previousSnapshot?.citationCount ?? null,
       currentCitations: apiMetrics?.citationCount || citationCount,
+      baselineScan: isBaseline,
+    });
+
+    await notifyScanChanges({
+      institutionId: institution.id,
+      scanRunId: finished.id,
+      newCount: counters.newCount,
+      updatedCount: counters.updatedCount,
+      removedCount,
       baselineScan: isBaseline,
     });
 

@@ -2,7 +2,7 @@
   "app": {
     "university": "جامعة العين العراقية",
     "system": "نظام متابعة المسار البحثي",
-    "subtitle": "مراقبة الأداء البحثي عبر Scopus كل 5 دقائق — بيانات حقيقية"
+    "subtitle": "مراقبة الأداء البحثي عبر Scopus كل ساعة — بيانات حقيقية"
   },
   "common": {
     "success": "تمت العملية بنجاح",
@@ -89,8 +89,26 @@
     "testConnection": "اختبار الاتصال بـ Scopus",
     "testScopus": "اختبار الاتصال بـ Scopus",
     "testWhatsApp": "إرسال رسالة واتساب تجريبية",
-    "recipientsHelp": "أدخل الأرقام مفصولة بفاصلة مع رمز الدولة، مثل 9647XXXXXXXX,9647YYYYYYYY",
-    "intervalHelp": "الحد الأدنى 5 دقائق لتحديث البيانات الحقيقية من Scopus؛ الفحص اليدوي مزامنة كاملة",
+    "recipientsTitle": "مستلمو واتساب (تنبيهات وتقارير)",
+    "recipientsHelp": "أضف اسماً ورقماً دولياً بدون +، ثم اختر القنوات وفعّل/عطّل المستلم من الواجهة.",
+    "recipientsEmpty": "لا مستلمين بعد — أضف رقماً أدناه.",
+    "recipientName": "الاسم",
+    "recipientPhone": "رقم واتساب (دولي)",
+    "recipientPhoneInvalid": "رقم واتساب غير صالح (8 أرقام على الأقل مع رمز الدولة).",
+    "addRecipient": "إضافة مستلم",
+    "editRecipient": "تعديل مستلم",
+    "updateRecipient": "حفظ المستلم",
+    "cancelEdit": "إلغاء التعديل",
+    "edit": "تعديل",
+    "remove": "حذف",
+    "enabled": "مفعّل",
+    "disabled": "معطّل",
+    "chanAlerts": "تنبيهات فورية",
+    "chanDaily": "يومي",
+    "chanWeekly": "أسبوعي",
+    "chanMonthly": "شهري",
+    "noChannels": "بدون قنوات",
+    "intervalHelp": "الافتراضي 60 دقيقة؛ الحد الأدنى 5. الفحص اليدوي = مزامنة كاملة.",
     "whatsappLog": "سجل رسائل واتساب",
     "noMessages": "لا توجد رسائل بعد."
   }

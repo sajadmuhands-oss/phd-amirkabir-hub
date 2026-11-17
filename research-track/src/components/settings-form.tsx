@@ -2,6 +2,11 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import {
+  createRecipient,
+  parseRecipientRecords,
+  type WhatsAppRecipient,
+} from "@/lib/whatsapp/recipients";
 
 type SettingRow = {
   key: string;
@@ -21,7 +26,6 @@ const FIELD_DEFS: Array<{
   key: string;
   label: string;
   secret?: boolean;
-  textarea?: boolean;
   help?: string;
 }> = [
   { key: "scopus.affiliationId", label: "Scopus Affiliation ID" },
@@ -34,12 +38,6 @@ const FIELD_DEFS: Array<{
     secret: true,
   },
   { key: "whatsapp.phoneNumberId", label: "WhatsApp Phone Number ID" },
-  {
-    key: "whatsapp.recipients",
-    label: "أرقام واتساب للطوارئ والتقارير",
-    help: "recipientsHelp",
-    textarea: true,
-  },
   {
     key: "monitor.intervalMinutes",
     label: "فاصل الفحص (بالدقائق)",
@@ -62,6 +60,18 @@ const FIELD_DEFS: Array<{
   { key: "timezone", label: "المنطقة الزمنية" },
 ];
 
+function blankDraft(): Omit<WhatsAppRecipient, "id"> {
+  return {
+    name: "",
+    phone: "",
+    enabled: true,
+    notifyAlerts: true,
+    notifyDaily: true,
+    notifyWeekly: true,
+    notifyMonthly: true,
+  };
+}
+
 export function SettingsForm({
   initialSettings,
   initialSources,
@@ -78,11 +88,71 @@ export function SettingsForm({
 
   const [values, setValues] = useState<Record<string, string>>(initialMap);
   const [sources, setSources] = useState(initialSources);
+  const [recipients, setRecipients] = useState<WhatsAppRecipient[]>(() =>
+    parseRecipientRecords(initialMap["whatsapp.recipients"] || "")
+  );
+  const [draft, setDraft] = useState(blankDraft);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState("");
 
   function setValue(key: string, value: string) {
     setValues((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function startEdit(row: WhatsAppRecipient) {
+    setEditingId(row.id);
+    setDraft({
+      name: row.name,
+      phone: row.phone,
+      enabled: row.enabled,
+      notifyAlerts: row.notifyAlerts,
+      notifyDaily: row.notifyDaily,
+      notifyWeekly: row.notifyWeekly,
+      notifyMonthly: row.notifyMonthly,
+    });
+  }
+
+  function resetDraft() {
+    setEditingId(null);
+    setDraft(blankDraft());
+  }
+
+  function upsertRecipient() {
+    const phone = draft.phone.replace(/[^\d]/g, "");
+    if (phone.length < 8) {
+      setMessage(t("recipientPhoneInvalid"));
+      return;
+    }
+    const next = createRecipient({
+      id: editingId || undefined,
+      name: draft.name,
+      phone,
+      enabled: draft.enabled,
+      notifyAlerts: draft.notifyAlerts,
+      notifyDaily: draft.notifyDaily,
+      notifyWeekly: draft.notifyWeekly,
+      notifyMonthly: draft.notifyMonthly,
+    });
+    setRecipients((prev) => {
+      const withoutDup = prev.filter(
+        (r) => r.id !== next.id && r.phone !== next.phone
+      );
+      return [...withoutDup, next];
+    });
+    resetDraft();
+    setMessage("");
+  }
+
+  function removeRecipient(id: string) {
+    setRecipients((prev) => prev.filter((r) => r.id !== id));
+    if (editingId === id) resetDraft();
+  }
+
+  function toggleRecipient(id: string, enabled: boolean) {
+    setRecipients((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, enabled } : r))
+    );
   }
 
   async function save(event: FormEvent) {
@@ -94,6 +164,7 @@ export function SettingsForm({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         settings: values,
+        recipients,
         sources: sources.map((s) => ({ code: s.code, enabled: s.enabled })),
       }),
     });
@@ -161,6 +232,159 @@ export function SettingsForm({
               t={t}
             />
           ))}
+        </div>
+
+        <div className="mt-6 space-y-4 border-t border-[rgba(0,33,71,0.08)] pt-5">
+          <div>
+            <h3 className="text-base text-[var(--auiq-navy)]">
+              {t("recipientsTitle")}
+            </h3>
+            <p className="mt-1 text-xs text-[var(--auiq-muted)]">
+              {t("recipientsHelp")}
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {recipients.length === 0 ? (
+              <p className="text-sm text-[var(--auiq-muted)]">
+                {t("recipientsEmpty")}
+              </p>
+            ) : (
+              recipients.map((row) => (
+                <div
+                  key={row.id}
+                  className="flex flex-col gap-3 rounded-xl border border-[rgba(0,33,71,0.08)] bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div>
+                    <p className="font-medium text-[var(--auiq-navy)]">
+                      {row.name || row.phone}
+                      {!row.enabled ? (
+                        <span className="ms-2 text-xs text-[var(--auiq-muted)]">
+                          ({t("disabled")})
+                        </span>
+                      ) : null}
+                    </p>
+                    <p className="text-sm text-[var(--auiq-muted)]" dir="ltr">
+                      {row.phone}
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--auiq-muted)]">
+                      {[
+                        row.notifyAlerts ? t("chanAlerts") : null,
+                        row.notifyDaily ? t("chanDaily") : null,
+                        row.notifyWeekly ? t("chanWeekly") : null,
+                        row.notifyMonthly ? t("chanMonthly") : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ") || t("noChannels")}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={row.enabled}
+                        onChange={(e) =>
+                          toggleRecipient(row.id, e.target.checked)
+                        }
+                      />
+                      {t("enabled")}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => startEdit(row)}
+                      className="rounded-lg border border-[rgba(0,33,71,0.12)] px-3 py-1.5 text-sm"
+                    >
+                      {t("edit")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeRecipient(row.id)}
+                      className="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-700"
+                    >
+                      {t("remove")}
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="rounded-xl border border-dashed border-[rgba(0,33,71,0.18)] bg-[var(--auiq-mist)]/40 p-4">
+            <p className="mb-3 text-sm font-medium text-[var(--auiq-navy)]">
+              {editingId ? t("editRecipient") : t("addRecipient")}
+            </p>
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="block text-sm">
+                <span className="mb-1.5 block text-[var(--auiq-muted)]">
+                  {t("recipientName")}
+                </span>
+                <input
+                  value={draft.name}
+                  onChange={(e) =>
+                    setDraft((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                  className="w-full rounded-xl border border-[rgba(0,33,71,0.12)] bg-white px-3 py-2 outline-none ring-[var(--auiq-sapphire)] focus:ring-2"
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="mb-1.5 block text-[var(--auiq-muted)]">
+                  {t("recipientPhone")}
+                </span>
+                <input
+                  value={draft.phone}
+                  onChange={(e) =>
+                    setDraft((prev) => ({ ...prev, phone: e.target.value }))
+                  }
+                  placeholder="9647XXXXXXXX"
+                  dir="ltr"
+                  className="w-full rounded-xl border border-[rgba(0,33,71,0.12)] bg-white px-3 py-2 outline-none ring-[var(--auiq-sapphire)] focus:ring-2"
+                />
+              </label>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-4 text-sm">
+              {(
+                [
+                  ["enabled", "enabled"],
+                  ["notifyAlerts", "chanAlerts"],
+                  ["notifyDaily", "chanDaily"],
+                  ["notifyWeekly", "chanWeekly"],
+                  ["notifyMonthly", "chanMonthly"],
+                ] as const
+              ).map(([key, labelKey]) => (
+                <label key={key} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={draft[key]}
+                    onChange={(e) =>
+                      setDraft((prev) => ({
+                        ...prev,
+                        [key]: e.target.checked,
+                      }))
+                    }
+                  />
+                  {t(labelKey)}
+                </label>
+              ))}
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={upsertRecipient}
+                className="rounded-xl bg-[var(--auiq-navy)] px-4 py-2 text-sm text-white"
+              >
+                {editingId ? t("updateRecipient") : t("addRecipient")}
+              </button>
+              {editingId ? (
+                <button
+                  type="button"
+                  onClick={resetDraft}
+                  className="rounded-xl border border-[rgba(0,33,71,0.15)] bg-white px-4 py-2 text-sm"
+                >
+                  {t("cancelEdit")}
+                </button>
+              ) : null}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -298,27 +522,18 @@ function Field({
     "w-full rounded-xl border border-[rgba(0,33,71,0.12)] bg-white px-3 py-2 outline-none ring-[var(--auiq-sapphire)] focus:ring-2";
 
   return (
-    <label className={`block text-sm ${field.textarea ? "md:col-span-2" : "md:col-span-1"}`}>
+    <label className="block text-sm md:col-span-1">
       <span className="mb-1.5 block text-[var(--auiq-muted)]">{field.label}</span>
-      {field.textarea ? (
-        <textarea
-          value={value}
-          onChange={(e) => onChange(field.key, e.target.value)}
-          className={`${inputClass} min-h-[88px]`}
-          autoComplete="off"
-        />
-      ) : (
-        <input
-          type={field.secret ? "password" : "text"}
-          value={value}
-          onChange={(e) => onChange(field.key, e.target.value)}
-          className={inputClass}
-          autoComplete="off"
-        />
-      )}
+      <input
+        type={field.secret ? "password" : "text"}
+        value={value}
+        onChange={(e) => onChange(field.key, e.target.value)}
+        className={inputClass}
+        autoComplete="off"
+      />
       {field.help ? (
         <span className="mt-1 block text-xs text-[var(--auiq-muted)]">
-          {t(field.help as "recipientsHelp" | "intervalHelp")}
+          {t(field.help as "intervalHelp")}
         </span>
       ) : null}
     </label>
